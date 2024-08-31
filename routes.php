@@ -3,6 +3,7 @@
 // use Routes\Api\UsersRouteApi;
 
 use Routes\Api\AuthRouteApi;
+use Routes\Api\BankAccountsRouteApi;
 use Routes\Api\UsersRouteApi;
 
 $api = API_ROUTE;
@@ -28,6 +29,9 @@ $userRoute->route();
 
 $authRouter = new AuthRouteApi($DB_CONNECTION, $router);
 $authRouter->route();
+
+$banksRouter = new BankAccountsRouteApi($DB_CONNECTION, $router);
+$banksRouter->route();
 
 
 $router->run();

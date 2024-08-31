@@ -24,6 +24,11 @@ class StringValidator {
     }
 
     public static function cardsDigitsValidator(string $value) : bool {
-        return preg_match("[0-9]{4}", $value);
+        return preg_match("/[0-9]{4}/", $value);
+    }
+
+    public static function onlyNumbers(string $value) : bool
+    {
+        return preg_match("/[0-9]+/", $value);
     }
 }

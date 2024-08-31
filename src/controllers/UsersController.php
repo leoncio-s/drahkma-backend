@@ -24,10 +24,10 @@ class UsersController{
 
 
     public function profile(){
-        Autenticated::autenticated();
-        if(Autenticated::getUserAuth() == null)return;
-        else{
+        
+        if(Autenticated::autenticated()){
             $user = $this->services->read(Autenticated::getUserAuth()['id']);
+
             return Response::json($user->toArray(), HttpStatus::HTTP_OK);
         }
     }

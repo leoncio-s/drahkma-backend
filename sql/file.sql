@@ -18,14 +18,15 @@ CREATE TABLE IF NOT EXISTS users (
 
 create table if not exists bank_accounts(
     id bigint auto_increment primary key,
-    bankCode int not null,
+    bankCode varchar(10) not null,
     user bigint not null,
     bankName varchar(100) not null, 
     agency varchar(8) not null,
     accountNumber varchar(10) not null,
     created_at datetime not null default current_timestamp,
     update_at datetime on update current_timestamp,
-    foreign key(user) references users(id)
+    foreign key(user) references users(id),
+    unique (user, bankCode, agency, accountNumber)
 );
 
 

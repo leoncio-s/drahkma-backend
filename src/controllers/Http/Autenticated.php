@@ -18,7 +18,8 @@ class Autenticated{
             return Response::json($validate, HttpStatus::HTTP_UNAUTHORIZED);
         }
         self::$user = $validate;
-        return;
+
+        return true;
     }
 
     public static function getUserAuth(){

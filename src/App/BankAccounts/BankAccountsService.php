@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Services;
+namespace App\BankAccounts;
 
-use App\Interfaces\ServiceInterface;
-use App\Models\User;
-use App\Repository\BankAccountsRepository;
+use App\BankAccounts\BankAccountsRepository;
 use App\Interfaces\Model;
+use App\Interfaces\ServicesInterface;
+use App\BankAccounts\BankAccounts;
 
-class BankAccountsService implements ServiceInterface{
+class BankAccountsService implements ServicesInterface{
 
     private BankAccountsRepository $repository;
     public function __construct(BankAccountsRepository $repository)
@@ -15,17 +15,22 @@ class BankAccountsService implements ServiceInterface{
         $this->repository = $repository;
     }
 
-    public function create(array $data): ?Model
+    public function create(array $data): Model | array | null
     {
         if(isset($data['user'])){
-            $data['user'] = $data['user'];
-            return $this->repository->save($data);
+            $validation = BankAccounts::validate($data);
+            if(isset($validation['errors'])){
+                return $validation;
+            }
+            $data = $this->repository->save($data);
+            return $data;
+            
         }
     }
 
-    public function read($data) : array | Model | null
+    public function read(int $idUser) : ?array
     {
-        return null;
+        return $this->repository->getByUser($idUser);
     }
 
     public function update(array $data): ?Model

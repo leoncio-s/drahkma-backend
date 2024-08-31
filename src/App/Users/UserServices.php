@@ -40,8 +40,9 @@ class UserServices implements ServicesInterface{
         return $user;
     }
 
-    public function read(string $id) : User | array | null{
-        return $this->repository->get($id);
+    public function read(int $id) : User | array | null{
+        $data = $this->repository->get($id);
+        return $data;
     }
 
     public function update(array $data) : ?User{

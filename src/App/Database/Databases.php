@@ -22,7 +22,7 @@ abstract class Databases{
         }else{
             return self::$INSTANCE;
         }
-        echo __CLASS__ . "Initializated";
+        // echo __CLASS__ . "Initializated";
     }
 
     private function connect(){
@@ -43,7 +43,7 @@ abstract class Databases{
             // echo($e->getMessage());
             // var_dump("DB connection Error");
             // throw $e;
-            return;
+            return null;
         }
         return null;
     }
@@ -66,7 +66,7 @@ abstract class Databases{
             return $ret;
         }catch(Exception $e){
             $this->db->rollBack();
-            echo($e->getMessage());
+            // echo($e->getMessage());
 
             return null;
         }
@@ -87,9 +87,7 @@ abstract class Databases{
             return $ret->fetchAll();
         }catch(Exception $e){
             $this->db->rollBack();
-            echo($e->getMessage());
-
-            return null;
+            throw $e;
         }
     }
 

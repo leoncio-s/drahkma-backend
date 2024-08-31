@@ -49,7 +49,7 @@ class MySqlDatabaseImpl extends Databases{
             return $db;
         }catch(PDOException $e){
             // echo $e->getMessage();
-            return;
+            return null;
         }
 
         return null;
@@ -75,7 +75,7 @@ class MySqlDatabaseImpl extends Databases{
                         $this->db->commit();
                     }catch(Exception $e){
                         $this->db->rollBack();
-                        echo($e);
+                        // echo($e);
                         throw $e;
                     }finally{
                         fclose($open);

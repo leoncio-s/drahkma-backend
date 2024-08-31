@@ -28,7 +28,7 @@ class UserRepository implements UserRepositoryInterface
 
         if (count($query) != 0) {
             $user = new User();
-            $user = $user->toObject($query);
+            $user = $user->toObject($query[0]);
             return $user;
         }
 
@@ -182,7 +182,7 @@ class UserRepository implements UserRepositoryInterface
                 return false;
             }
         } catch (PDOException $e) {
-            echo $e;
+            // echo $e;
             return false;
         }
     }
