@@ -157,7 +157,7 @@ class User implements Model
         return $this;
     }
 
-    public function toArray(){
+    public function toArray():array{
         return              [
             'id' => $this->getId(),
             'fullname' => $this->getFullName(),
@@ -185,7 +185,7 @@ class User implements Model
         ];
     }
 
-    public static function objValidate(array $data){
+    public static function validate(array $data): array{
         $errors = [
             "fullname" =>[],
             "email" =>[],

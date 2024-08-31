@@ -4,11 +4,11 @@ namespace App\Validators;
 
 class StringValidator {
     public static function descrValidate(string $value) : bool{
-        return preg_match("/[\w\s]+/", $value);
+        return preg_match("/[\w\s]+/", $value) && !self::sqlInjection($value);
     }
 
     public static function namesValidate(string $value):bool{
-        return !str_starts_with("'", $value) && !str_ends_with("'", $value) && preg_match("/[\\w\\s\\']+/", $value);
+        return !str_starts_with("'", $value) && !str_ends_with("'", $value) && preg_match("/[\\w\\s\\']+/", $value) && !self::sqlInjection($value);
     }
 
     public static function passwordValidator(string $value) : bool{
@@ -30,5 +30,9 @@ class StringValidator {
     public static function onlyNumbers(string $value) : bool
     {
         return preg_match("/[0-9]+/", $value);
+    }
+
+    public static function sqlInjection(string $value) : bool {
+        return preg_match("/(((\+)|(\ ))(((\%27)|(\'))|union|select|delete|insert|or|alter|drop|and)(((\+)|(\ ))))/", $value);
     }
 }

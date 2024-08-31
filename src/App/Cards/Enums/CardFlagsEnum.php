@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums;
+namespace App\Cards\Enums;
 
 enum CardFlagsEnum:String{
     case Visa = 'Visa';

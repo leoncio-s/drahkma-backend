@@ -40,6 +40,8 @@ class SendEmail{
             $mail->setFrom(MAIL_FROM_ADDRESS, MAIL_FROM_NAME);
 
             $mail->isHTML(true);
+            $mail->setLanguage("pt_br");
+            $mail->CharSet = "UTF-8";
 
             return $mail;
         }catch(Exception $e){

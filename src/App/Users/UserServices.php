@@ -23,7 +23,7 @@ class UserServices implements ServicesInterface{
     }
 
     public function create(array $data) : User | array | null {
-        $validate = User::objValidate($data);
+        $validate = User::validate($data);
         $emailValidate = $this->repository->getByEmail($data['email']);
 
         if($emailValidate instanceof User){
@@ -71,6 +71,8 @@ class UserServices implements ServicesInterface{
         }else if($user->getEmailVerifiedAt() == null){
             $this->generateEmailVerification($user);
             return ['error' => 'This e-mail has not verified', 'errorCode' => HttpStatus::HTTP_BAD_REQUEST];
+        }elseif($user->getEmailVerifiedAt() != null && !$user->getActived()){
+            return ['error' => 'User not allowed', 'errorCode' => HttpStatus::HTTP_FORBIDDEN];
         }
         
         if(PasswordUtils::compare($password, $user->getPassword())){

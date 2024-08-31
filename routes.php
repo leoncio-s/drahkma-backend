@@ -4,6 +4,7 @@
 
 use Routes\Api\AuthRouteApi;
 use Routes\Api\BankAccountsRouteApi;
+use Routes\Api\CardsRouteApi;
 use Routes\Api\UsersRouteApi;
 
 $api = API_ROUTE;
@@ -32,6 +33,9 @@ $authRouter->route();
 
 $banksRouter = new BankAccountsRouteApi($DB_CONNECTION, $router);
 $banksRouter->route();
+
+$cardsRouter = new CardsRouteApi($DB_CONNECTION, $router);
+$cardsRouter->route();
 
 
 $router->run();

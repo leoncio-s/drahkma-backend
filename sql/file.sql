@@ -61,7 +61,8 @@ create table if not exists cards(
     created_at datetime not null default current_timestamp,
     update_at datetime on update current_timestamp,
     check (invoice_day >= 1 and invoice_day <=31),
-    foreign key (user) references users(id)
+    foreign key (user) references users(id),
+    unique(type, flag, last_4_digits)
 );
 
 create table if not exists items(

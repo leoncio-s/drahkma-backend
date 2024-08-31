@@ -25,11 +25,9 @@ class BankAccountsRouteApi extends ApiRoute{
     public function route()
     {
         $this->router->mount(API_ROUTE . "/banks", function(){
-            if(Autenticated::autenticated()){
-                $controller = new BankAccountController($this->service);
-                $this->router->get("/", fn()=>$controller->getAll());
-                $this->router->post("/", fn()=>$controller->create());
-            }
+            $controller = new BankAccountController($this->service);
+            $this->router->get("/", fn()=>$controller->getAll());
+            $this->router->post("/", fn()=>$controller->create());
         });
     }
 }
