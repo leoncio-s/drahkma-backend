@@ -116,4 +116,21 @@ class CardsRepository implements RepositoryInterface{
             return null;
         }
     }
+
+    public function getByIdAndUser(int $id, int $userId): ?Model
+    {
+        try{
+            $sql = "Select * from bank_accounts where id=? and user=?;";
+            $data = $this->db->select($sql, [$id, $userId]);
+            if(count($data)>0){
+                $account = new Cards();
+                $account->toObject($data[0]);
+                return $account;
+            }
+
+            return null;
+        }catch(PDOException $e){
+            return null;
+        }
+    }
 }

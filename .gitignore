@@ -1,6 +1,7 @@
 vendor/
 logs/
 vscode/
+src/front_lfinanca/
 
 *.log
 *.ini

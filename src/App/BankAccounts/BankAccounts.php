@@ -106,7 +106,7 @@ class BankAccounts implements Model
     public function toArray():array{
         return  [
             'id' => $this->getId(),
-            'user' => $this->getUserId(),
+            // 'user' => $this->getUserId(),
             'bankCode' => $this->getBankCode(),
             'bankName' => $this->getBankName(),
             'agency' => $this->getAgency(),
@@ -115,7 +115,6 @@ class BankAccounts implements Model
     }
 
     public function toObject(array $data) : Model{
-
         $id = (isset($data['id']) && gettype($data['id']) == 'integer') ? $data['id'] : null;
         $bankCode = (isset($data['bankCode']) && gettype($data['bankCode']) == 'string') ? $data['bankCode'] : null;
         $userId = (isset($data['user']) && gettype($data['user'])=="integer") ? $data['user'] : null;
@@ -133,7 +132,7 @@ class BankAccounts implements Model
         return $this;
     }
 
-    public static function validate(array $data){
+    public static function validate(array $data) : array{
         $erros=[
             "bankCode"  => [],
             "bankName"  => [],

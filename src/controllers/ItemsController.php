@@ -2,17 +2,17 @@
 
 namespace controllers;
 
-use App\BankAccounts\BankAccounts;
-use App\BankAccounts\BankAccountsService;
+use App\Items\Items;
+use App\Items\ItemsService;
 use controllers\Http\Autenticated;
 use controllers\Http\HttpStatus;
 use controllers\Http\Request;
 use controllers\Http\Response;
 
-class BankAccountController {
+class ItemsController {
 
-    private BankAccountsService $service;
-    public function __construct(BankAccountsService $service) {
+    private ItemsService $service;
+    public function __construct(ItemsService $service) {
         $this->service = $service;
     }
 
@@ -21,7 +21,7 @@ class BankAccountController {
             $data = Request::getAll();
             $data['user'] = Autenticated::getUserAuth()['id'];
             $ret = $this->service->create($data);
-            if($ret instanceof BankAccounts){
+            if($ret instanceof Items){
                 return Response::json($ret->toArray(), HttpStatus::HTTP_CREATED);
             }else{
                 return Response::json($ret, HttpStatus::HTTP_BAD_REQUEST);
@@ -36,7 +36,14 @@ class BankAccountController {
             if($data==null){
                 return Response::json([], HttpStatus::HTTP_NO_CONTENT);
             }else{
-                return Response::json($data);
+                $nData = [];
+                foreach($data as $dt){
+                    $dt['date'] = $dt['date']->format('Ymd');
+                    array_push($nData, $dt);
+                }
+                $data = null;
+                // var_dump($nData);
+                return Response::json($nData);
             }
         }
     }

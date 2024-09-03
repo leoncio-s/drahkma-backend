@@ -1,15 +1,15 @@
 <?php
 
-namespace App\BankAccounts;
+namespace App\Categories;
 
 use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
 use App\Interfaces\RepositoryInterface;
-use App\BankAccounts\BankAccounts;
+use App\Categories\Categories;
 use Exception;
 use PDOException;
 
-class BankAccountsRepository implements RepositoryInterface{
+class CategoriesRepository implements RepositoryInterface{
 
     private $db;
 
@@ -23,26 +23,24 @@ class BankAccountsRepository implements RepositoryInterface{
         $account = null;
 
         try{
-            $sqlSelect = "SELECT * FROM bank_accounts WHERE user=:user and agency=:agency and bankCode=:bankCode and accountNumber=:accountNumber limit 1;";
+            $sqlSelect = "SELECT * FROM categories WHERE user=:user and upper(description)=upper(:description) limit 1;";
             $select = $this->db->select($sqlSelect,            
             [
                 "user" => $data['user'],
-                "agency" => $data["agency"],
-                "bankCode" => $data["bankCode"],
-                "accountNumber" => $data["accountNumber"]
+                "description" => $data["description"]
             ]);
 
             if(count($select) > 0){
-                $account = new BankAccounts();
+                $account = new Categories();
                 $account->toObject($select[0]);
             }else{
-                $sql = "INSERT INTO bank_accounts(bankCode, user, bankName, agency, accountNumber) values(:bankCode, :user, :bankName, :agency, :accountNumber);";
+                $sql = "INSERT INTO categories(user, description) values(:user, upper(:description));";
                 $prepare = $this->db->insert($sql, $data);
             
-                $dat = $this->db->select("SELECT * FROM bank_accounts WHERE id=?", [$prepare]);
+                $dat = $this->db->select("SELECT * FROM categories WHERE id=?", [$prepare]);
 
                 if(count($dat) > 0){
-                    $account = new BankAccounts();
+                    $account = new Categories();
                     $account->toObject($dat[0]);
                 }
             }
@@ -70,10 +68,10 @@ class BankAccountsRepository implements RepositoryInterface{
     public function get(int $id): ?Model
     {
         try{
-            $sql = "Select * from bank_accounts where id=?;";
+            $sql = "Select * from categories where id=?;";
             $data = $this->db->select($sql, [$id]);
             if(count($data)>0){
-                $account = new BankAccounts();
+                $account = new Categories();
                 $account->toObject($data[0]);
                 return $account;
             }
@@ -87,12 +85,12 @@ class BankAccountsRepository implements RepositoryInterface{
     public function getByUser(int $userId){
         try{
             $ret = [];
-            $sql = "select * from bank_accounts where user=? order by bankName;";
+            $sql = "select * from categories where user=? order by description;";
             $data = $this->db->select($sql, [$userId]);
 
             if(count($data) > 0){
                 foreach($data as $ac){
-                    $account = new BankAccounts();
+                    $account = new Categories();
                     $account->toObject($ac);
                     array_push($ret, $account->toArray());
                     // unset($account);
@@ -106,18 +104,17 @@ class BankAccountsRepository implements RepositoryInterface{
 
     public function getByIdAndUser(int $id, int $userId){
         try{
-            $ret = [];
-            $sql = "select * from bank_accounts where user=? and id=? order by bankName;";
+            $ret = null;
+            $sql = "select * from categories where user=? and id=? order by description;";
             $data = $this->db->select($sql, [$userId, $id]);
 
             if(count($data) > 0){
-                foreach($data as $ac){
-                    $account = new BankAccounts();
-                    $account->toObject($ac);
-                    array_push($ret, $account->toArray());
+                // foreach($data as $ac){
+                $ret = new Categories();
+                $ret->toObject($data[0]);
+                    // array_push($ret, $account->toArray());
                     // unset($account);
                 }
-            }
             return $ret;
         }catch(PDOException $e){
             return null;

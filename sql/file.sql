@@ -32,21 +32,24 @@ create table if not exists bank_accounts(
 
 create table if not exists transfer_bank(
     id bigint auto_increment primary key,
+    user bigint not null,
     type ENUM('PIX', 'TED', 'DOC', 'BOLETO', 'OTHERS') not null,
     description varchar(250) not null,
     bank_account bigint not null,
     created_at datetime not null default current_timestamp,
     update_at datetime on update current_timestamp,
-    foreign key (bank_account) references bank_accounts(id)
+    foreign key (bank_account) references bank_accounts(id),
+    foreign key (user) references users(id)
 );
 
 create table if not exists categories(
     id bigint auto_increment primary key,
-    description varchar(10) not null,
+    description varchar(30) not null,
     user bigint not null,
     created_at datetime not null default current_timestamp,
     update_at datetime on update current_timestamp,
     foreign key (user) references users(id)
+    unique(user, description)
 );
 
 create table if not exists cards(
@@ -62,7 +65,7 @@ create table if not exists cards(
     update_at datetime on update current_timestamp,
     check (invoice_day >= 1 and invoice_day <=31),
     foreign key (user) references users(id),
-    unique(type, flag, last_4_digits)
+    unique(user,type, flag, last_4_digits)
 );
 
 create table if not exists items(
@@ -73,8 +76,8 @@ create table if not exists items(
     value float not null default 0.00,
     date datetime not null default now(),
     category bigint not null, 
-    card bigint not null,
-    transfer_bank bigint not null,
+    card bigint,
+    transfer_bank bigint,
     created_at datetime not null default current_timestamp,
     update_at datetime on update current_timestamp,
     foreign key (user) references users(id),

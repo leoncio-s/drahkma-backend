@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Categories;
 
 use App\Interfaces\Model;
-use App\Validator\StringValidator;
+use App\Validators\StringValidator;
 
 class Categories implements Model
 {
@@ -36,7 +36,7 @@ class Categories implements Model
     }
 
     public function setDescription(?string $value) : void{
-        $this->description = (StringValidator::descrValidate($value) && strlen($value) >= 3 && strlen($value) <= 20) ? $value : "";
+        $this->description = ($value != null && StringValidator::descrValidate($value) && strlen($value) >= 3 && strlen($value) <= 30) ? strtoupper($value) : "";
     }
 
     public function setUser(?int $user): void{
@@ -54,8 +54,11 @@ class Categories implements Model
 
     public function toArray(): array
     {
-        return ['decription' => $this->getDescription(),
-            'user' => $this->getUserId()];
+        return [
+            'id'    => $this->getId(),
+            'decription' => $this->getDescription(),
+            // 'user' => $this->getUserId()];
+        ];
     }
 
     public function toObject(array $data): Model
@@ -73,6 +76,21 @@ class Categories implements Model
     }
 
     public static function validate(array $data):array{
-        return [];
+        $description = (isset($data['description']))? strtoupper($data['description']) : null;
+        $user = (isset($data['user']) && is_int($data['user']))? $data['user'] : null;
+
+        $error['description'] = [];
+
+        if($description == null || $description == "") array_push($error['description'], "This field is required");
+        elseif(!(strlen($description) >=3 && strlen($description) <= 30)) array_push($error['description'], "Min. lenght 3 and max. lenght 30");
+        elseif(!StringValidator::descrValidate($description)) array_push($error['description'], "Invalid value for field");
+
+        foreach($error as $k => $v){
+            if(count($error[$k]) <= 0) unset($error[$k]);
+        }
+
+        if(count($error, COUNT_RECURSIVE) > 0) return ['errors' => $error, "data" => ['description' => $description, "user" => $user]];
+        else return ["data" => ['description' => $description, "user" => $user]];
+
     }
 }

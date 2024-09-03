@@ -46,14 +46,15 @@ class JWTTokenUtils{
 
     public static function decode(string $token){
         $data = explode('.', $token, 3);
+
+        if($token == "" || count($data) != 3) return ['error' => 'Unauthorized'];
+
         $payload= $data[0];
         $body= $data[1];
         // $payload= Utils::base64url_decode($data[0]);
         // $body= Utils::base64url_decode($data[1]);
         $sign= Utils::base64url_decode($data[2]);
 
-
-        if($token == "" || count($data) != 3) return ['error' => 'Unauthorized'];
 
         $verify = self::verifySign($payload, $body, $sign);
 

@@ -1,16 +1,16 @@
 <?php
 
-namespace App\BankAccounts;
+namespace App\Categories;
 
-use App\BankAccounts\BankAccountsRepository;
+use App\Categories\CategoriesRepository;
 use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
-use App\BankAccounts\BankAccounts;
+use App\Categories\Categories;
 
-class BankAccountsService implements ServicesInterface{
+class CategoriesService implements ServicesInterface{
 
-    private BankAccountsRepository $repository;
-    public function __construct(BankAccountsRepository $repository)
+    private CategoriesRepository $repository;
+    public function __construct(CategoriesRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -18,7 +18,7 @@ class BankAccountsService implements ServicesInterface{
     public function create(array $data): Model | array | null
     {
         if(isset($data['user'])){
-            $validation = BankAccounts::validate($data);
+            $validation = Categories::validate($data);
             if(isset($validation['errors'])){
                 return $validation;
             }

@@ -121,7 +121,7 @@ class Cards implements Model
         return 
             [
                 'id' => $this->getId(),
-                'user' => $this->getUserId(),
+                // 'user' => $this->getUserId(),
                 'type' => $this->getType(),
                 'brand' => $this->getBrand(),
                 'flag' => $this->getFlag(),
