@@ -19,6 +19,7 @@ class AuthController{
     public function login(){
         try{
             $req = Request::getAll();
+
             $ret = $this->service->login($req['email'], $req['password']);
             if(isset($ret['error'])){
                 Response::json($ret, $ret['errorCode']);

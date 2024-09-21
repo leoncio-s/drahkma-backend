@@ -62,7 +62,9 @@ class UserServices implements ServicesInterface{
     }
 
 
-    public function login(string $email, string $password){
+    public function login(?string $email, ?string $password){
+
+        if($email == null || $password == null) return ['error' => 'User or password is required', 'errorCode' => HttpStatus::HTTP_BAD_REQUEST ];
         $user = $this->repository->getByEmail($email);
         
         if($user == null){

@@ -7,5 +7,5 @@ enum CardTypeEnum : string{
     case Debit = 'Debit';
     case VR = 'VR';
     case VA = 'VA';
-    case Others = 'Othres';
+    case Others = 'Others';
 }

@@ -8,6 +8,7 @@ use controllers\Http\Autenticated;
 use controllers\Http\HttpStatus;
 use controllers\Http\Request;
 use controllers\Http\Response;
+use DateTime;
 
 class ItemsController {
 
@@ -57,6 +58,47 @@ class ItemsController {
     public function update(int $id){
         if(Autenticated::autenticated()){
             
+        }
+    }
+
+    public function inflow(){
+        if(Autenticated::autenticated()){
+            if(isset($_GET['start_date'], $_GET['finish_date'])){
+                $start = DateTime::createFromFormat('Ymd', $_GET['start_date']);
+                $finish = DateTime::createFromFormat('Ymd', $_GET['finish_date']);
+
+                $data = $this->service->getInflow($start, $finish);
+                return Response::json($data);
+            }
+            return Response::json(null, HttpStatus::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function outflow(){
+        if(Autenticated::autenticated()){
+            if(isset($_GET['start_date'], $_GET['finish_date'])){
+                $start = DateTime::createFromFormat('Ymd', $_GET['start_date']);
+                $finish = DateTime::createFromFormat('Ymd', $_GET['finish_date']);
+
+                $data = $this->service->getOutflow($start, $finish);
+                return Response::json($data);
+            }
+            return Response::json([], HttpStatus::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function amounts(){
+        if(Autenticated::autenticated()){
+            if(isset($_GET['start_date'], $_GET['finish_date'])){
+
+                $start = DateTime::createFromFormat('Ymd', $_GET['start_date']);
+                $finish = DateTime::createFromFormat('Ymd', $_GET['finish_date']);
+
+                $data = $this->service->getAmounts($start, $finish);
+
+                return Response::json($data);
+            }
+            return Response::json([], HttpStatus::HTTP_BAD_REQUEST);
         }
     }
 }

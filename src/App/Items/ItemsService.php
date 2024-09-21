@@ -6,6 +6,8 @@ use App\Items\ItemsRepository;
 use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\Items\Items;
+use controllers\Http\Autenticated;
+use DateTime;
 
 class ItemsService implements ServicesInterface{
 
@@ -49,5 +51,20 @@ class ItemsService implements ServicesInterface{
             return 0;
         }
         return 0;
+    }
+
+    public function getInflow(DateTime $start_date, DateTime $finish_date){
+        $data = $this->repository->getInflow($start_date->format('Ymd'), $finish_date->format('Ymd'), Autenticated::getUserAuth()['id']);
+        return $data;
+    }
+
+    public function getOutflow(DateTime $start_date, DateTime $finish_date){
+        $data = $this->repository->getOutflow($start_date->format('Ymd'), $finish_date->format('Ymd'), Autenticated::getUserAuth()['id']);
+        return $data;
+    }
+
+    public function getAmounts(DateTime $start_date, DateTime $finish_date){
+        $data = $this->repository->getAmounts($start_date->format('Ymd'), $finish_date->format('Ymd'), Autenticated::getUserAuth()['id']);
+        return $data;
     }
 }

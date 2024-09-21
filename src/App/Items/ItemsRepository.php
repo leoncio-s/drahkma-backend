@@ -168,5 +168,120 @@ where i.user=? order by date desc;";
         }
     }
 
+    public function getInflow(string $start_date, string $finish_date, int $userId):array{
+        try{
+            $sql = "select i.*, JSON_OBJECT('id', c.id, 'description', c.description) as category,
+CASE WHEN i.card is not null then
+	json_object('id', c2.id, 'type', c2.`type`, 'brand', c2.brand, 'expires_at', c2.expires_at, 'flag', c2.flag, 'last_4_digits', c2.last_4_digits, 'invoice_day', c2.invoice_day)
+else
+	i.card 
+end as card,
+case when i.transfer_bank is not null then
+	json_object('id', t.id,'description', t.description, 'type', t.`type`,'bank_account',
+	JSON_OBJECT('id', b.id, 'bankName', b.bankName, 'agency', b.agency, 'accountNumber', b.accountNumber, 'accountNumber', b.accountNumber, 'bankCode', b.bankCode))
+else
+	i.transfer_bank 
+end as transfer_bank
+from items i
+left join categories c on c.id = i.category and c.`user` = i.`user` 
+left join cards c2 on c2.id = i.card and c2.`user` = i.`user` 
+left join transfer_bank t on t.id = i.transfer_bank
+left join bank_accounts b on b.id=t.bank_account
+where i.user=:user_id
+and i.date between :start_date and :finish_date
+and i.expense=false
+order by date desc;";
+            $prep = $this->db->select($sql,[
+                "start_date" => $start_date,
+                "finish_date" => $finish_date,
+                "user_id" => $userId
+            ]);
+            $toRet = [];
+            if(count($prep, COUNT_RECURSIVE) > 0 || $prep != null){
+                foreach($prep as $data){
+                    $item = new Items();
+                    $item->toObject($data);
+                    array_push($toRet, $item->toArray());
+                }
+            }
+            
+            return $toRet;
+            
+        }catch(PDOException $e){
+            return [];
+        }catch(Exception $e){
+            return [];
+        }
+    }
+
+    public function getOutflow(string $start_date, string $finish_date, int $userId){
+        try{
+            $sql = "select i.*, JSON_OBJECT('id', c.id, 'description', c.description) as category,
+CASE WHEN i.card is not null then
+	json_object('id', c2.id, 'type', c2.`type`, 'brand', c2.brand, 'expires_at', c2.expires_at, 'flag', c2.flag, 'last_4_digits', c2.last_4_digits, 'invoice_day', c2.invoice_day)
+else
+	i.card 
+end as card,
+case when i.transfer_bank is not null then
+	json_object('id', t.id,'description', t.description, 'type', t.`type`,'bank_account',
+	JSON_OBJECT('id', b.id, 'bankName', b.bankName, 'agency', b.agency, 'accountNumber', b.accountNumber, 'accountNumber', b.accountNumber, 'bankCode', b.bankCode))
+else
+	i.transfer_bank 
+end as transfer_bank
+from items i
+left join categories c on c.id = i.category and c.`user` = i.`user` 
+left join cards c2 on c2.id = i.card and c2.`user` = i.`user` 
+left join transfer_bank t on t.id = i.transfer_bank
+left join bank_accounts b on b.id=t.bank_account
+where i.user=:user_id
+and i.date between :start_date and :finish_date
+and i.expense=true
+order by date desc;";
+            $prep = $this->db->select($sql,[
+                "start_date" => $start_date,
+                "finish_date" => $finish_date,
+                "user_id" => $userId
+            ]);
+            $toRet = [];
+            if(count($prep, COUNT_RECURSIVE) > 0 || $prep != null){
+                foreach($prep as $data){
+                    $item = new Items();
+                    array_push($toRet, $item->toObject($data));
+                }
+            }
+
+            return $toRet;
+            
+        }catch(PDOException $e){
+            return null;
+        }catch(Exception $e){
+            return null;
+        }
+    }
+
+    public function getAmounts(string $start_date, string $finish_date, int $userId){
+        try{
+            $sql = "SELECT sum(value), 'outflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=true
+            union all
+            SELECT sum(value), 'inflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=false
+            union all
+            select in.sum - out.sum, 'amount' as type from (SELECT sum(value), 'outflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=true) out,
+            (SELECT sum(value), 'inflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=false) in";
+
+            $prep = $this->db->select($sql,[
+                "start_date" => $start_date,
+                "finish_date" => $finish_date,
+                "user_id" => $userId
+            ]);
+
+            return $prep;
+            
+        }catch(PDOException $e){
+            return null;
+        }catch(Exception $e){
+            return null;
+        }
+    }
+
 
 }

@@ -56,7 +56,7 @@ class Categories implements Model
     {
         return [
             'id'    => $this->getId(),
-            'decription' => $this->getDescription(),
+            'description' => $this->getDescription(),
             // 'user' => $this->getUserId()];
         ];
     }
