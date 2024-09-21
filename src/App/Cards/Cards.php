@@ -5,10 +5,7 @@ namespace App\Cards;
 use App\Cards\Enums\CardTypeEnum;
 use App\Cards\Enums\CardFlagsEnum;
 use App\Interfaces\Model;
-use App\Users\User;
 use App\Validators\StringValidator;
-use DateTime;
-use Exception;
 
 class Cards implements Model
 {
