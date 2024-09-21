@@ -10,6 +10,10 @@ class Request{
         if($get_content == null){
             return Response::json(["error" => "No body content"], HttpStatus::HTTP_BAD_REQUEST);
         }
-        return json_decode($get_content, true);
+        try{
+            return json_decode($get_content, true);
+        }catch(Exception $e){
+            return Response::json(["error" => "INTERNAL SERVER ERROR"], HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
+        } 
     }
 }

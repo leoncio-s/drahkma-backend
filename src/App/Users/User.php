@@ -250,11 +250,11 @@ class User implements Model
         // fim validação do senha        
 
         // Validação de telefone
-        if(isset($data['phone_number']) && $data["phone_number"] != "" && (strlen($data['phone_number']) < 8 || strlen($data['phone_number']) > 14)) {
+        if(!isset($data['phone_number'])){
+            array_push($errors["phone_number"], "O campo é obrigatório!");
+        }else if(isset($data['phone_number']) && $data["phone_number"] != "" && (strlen($data['phone_number']) < 8 || strlen($data['phone_number']) > 14)) {
             array_push($errors["phone_number"], "O tamanho minímo para o campo é 8 e o máximo é 14");
-        }
-
-        if(isset($data['phone_number']) && $data["phone_number"] != "" && !StringValidator::phoneNumbersValidator($data['phone_number'])){
+        }else if(isset($data['phone_number']) && $data["phone_number"] != "" && !StringValidator::phoneNumbersValidator($data['phone_number'])){
             array_push($errors["phone_number"], "O campo possui caracteres ou valor inválido, verifique!");
         }else{
             $phone_number = isset($data['phone_number']) ? $data['phone_number'] : null;
