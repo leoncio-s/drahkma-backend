@@ -47,9 +47,34 @@ class CategoriesController {
         }
     }
 
-    public function update(int $id){
+    public function update(){
         if(Autenticated::autenticated()){
+            $data = Request::getAll();
+            if(isset($data['id']) && isset($data['description'])){
+                $data['user'] = Autenticated::getUserAuth()['id'];
+
+                $ret = $this->service->update($data);
+                return Response::json($ret);
+            }else{
+                return Response::json([], HttpStatus::HTTP_BAD_REQUEST);
+            }
             
+        }
+    }
+
+    public function delete(int $id){
+        if(Autenticated::autenticated()){
+            $data = [
+                'id' => $id,
+                'user' => Autenticated::getUserAuth()['id']
+            ];
+
+            $retSrv = $this->service->delete($data);
+            if(isset($retSrv['error'])){
+                return Response::json($retSrv, HttpStatus::HTTP_BAD_REQUEST);
+            }
+
+            return Response::json($retSrv);
         }
     }
 }

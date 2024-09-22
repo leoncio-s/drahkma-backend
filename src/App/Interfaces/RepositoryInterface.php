@@ -9,5 +9,5 @@ interface RepositoryInterface{
     public function get(int $id): Model | null | array;
     public function save(array $data): Model | null | array;
     public function update(array $data):Model | null | array;
-    public function delete($data):bool;
+    public function delete($data):bool | int | array;
 }

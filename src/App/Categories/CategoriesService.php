@@ -36,17 +36,22 @@ class CategoriesService implements ServicesInterface{
     public function update(array $data): ?Model
     {
         if(isset($data['user'])){
-            $data['user'] = $data['user'];
-            return $this->repository->update($data);
+            // $data['user'] = $data['user'];
+            $cat = Categories::validate($data);
+            if(isset($data['errors'])){
+                return $cat;
+            }else{
+                $ret = $this->repository->update($cat['data']);
+                return $ret;
+            }
+            
         }
     }
 
-    public function delete(array $data): bool | int | null
+    public function delete(array $data): bool | int | null | array
     {
-        if(isset($data['user'])){
-            $data['user'] = $data['user'];
-            // return $this->repository->delete($data);
-            return 0;
+        if(isset($data['user']) && isset($data['id'])){
+            return $this->repository->delete($data);
         }
         return 0;
     }

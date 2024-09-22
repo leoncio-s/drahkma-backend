@@ -75,11 +75,21 @@ class Categories implements Model
         
     }
 
-    public static function validate(array $data):array{
+    public static function validate(array $data, bool $update = false):array{
+        $id = null;
         $description = (isset($data['description']))? strtoupper($data['description']) : null;
         $user = (isset($data['user']) && is_int($data['user']))? $data['user'] : null;
 
         $error['description'] = [];
+        if($update){
+            if(!isset($data['id'])){
+                array_push($error['id'], "Id value is required");
+            }elseif (!is_int($data['id']) || $data['id'] <= 0) {
+                array_push($error['id'], "Id value is invalid");
+            }else{
+                $id = $data['id'];
+            }
+        }
 
         if($description == null || $description == "") array_push($error['description'], "This field is required");
         elseif(!(strlen($description) >=3 && strlen($description) <= 30)) array_push($error['description'], "Min. lenght 3 and max. lenght 30");
@@ -89,8 +99,14 @@ class Categories implements Model
             if(count($error[$k]) <= 0) unset($error[$k]);
         }
 
-        if(count($error, COUNT_RECURSIVE) > 0) return ['errors' => $error, "data" => ['description' => $description, "user" => $user]];
-        else return ["data" => ['description' => $description, "user" => $user]];
+        $dataToret = ['description' => $description, "user" => $user];
+
+        if($update){
+            array_push($dataToret, ['id' => $id]);
+        }
+
+        if(count($error, COUNT_RECURSIVE) > 0) return ['errors' => $error, "data" => $dataToret];
+        else return ["data" => $dataToret];
 
     }
 }

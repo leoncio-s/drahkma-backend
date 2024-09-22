@@ -29,6 +29,8 @@ class CategoriesRouteApi extends ApiRoute{
             $controller = new CategoriesController($this->service);
             $this->router->get("/", fn()=>$controller->getAll());
             $this->router->post("/", fn()=>$controller->create());
+            $this->router->put('/', fn()=> $controller->update());
+            $this->router->delete('/{id}', fn(int $id)=>$controller->delete($id));
         });
     }
 }

@@ -9,5 +9,5 @@ interface ServicesInterface{
     
     public function create(array $data) : Model | array | null;
     public function update(array $data) : Model | array | null;
-    public function delete(array $data) : bool | int | null;
+    public function delete(array $data) : bool | int | null | array;
 }

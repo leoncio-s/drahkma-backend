@@ -35,7 +35,10 @@ class CategoriesRepository implements RepositoryInterface{
                 $account->toObject($select[0]);
             }else{
                 $sql = "INSERT INTO categories(user, description) values(:user, upper(:description));";
-                $prepare = $this->db->insert($sql, $data);
+                $prepare = $this->db->insert($sql, [
+                    "user" => $data['user'],
+                    "description" => $data["description"]
+                ]);
             
                 $dat = $this->db->select("SELECT * FROM categories WHERE id=?", [$prepare]);
 
@@ -57,12 +60,77 @@ class CategoriesRepository implements RepositoryInterface{
 
     public function update(array $data): ?Model
     {
-        return null;
+        try{
+            $sqlSelect = "SELECT * FROM categories WHERE user=:user and upper(description)=upper(:description) limit 1;";
+            $select = $this->db->select($sqlSelect,            
+            [
+                "user" => $data['user'],
+                "description" => $data["description"]
+            ]);
+
+            if(count($select) > 0){
+                return ['error' => "You already have a category with this description"];
+            }else{
+                $sql = "UPDATE categories SET description=:description WHERE user=:user and id=:id;";
+                $prepare = $this->db->execute($sql, [
+                    "user" => $data['user'],
+                    "id" => $data['id'],
+                    "description" => $data["description"]
+                ]);
+            
+                $dat = $this->db->select("SELECT * FROM categories WHERE id=?", [$data['id']]);
+
+                $account = new Categories();
+
+                if(count($dat) > 0){
+                    $account->toObject($dat[0]);
+                }
+
+                return $account;
+            }
+            
+        }catch(PDOException $e){
+            throw $e;
+            return ['error' => $e->getCode()];
+        }catch(Exception $e){
+            return ['error' => $e->getCode()];
+        }
+
+        return $account;
     }
 
-    public function delete($data): bool
+    public function delete($data): bool | array
     {
-        return false;
+        $conn = $this->db->getDBConn();
+        $conn->beginTransaction();
+        try{
+
+            $it = "SELECT count(*) FROM items where category=:id and user=:user";
+            $select = $this->db->select($it, ['id'=>$data['id'], "user"=>$data['user']]);
+
+            if(count($select, COUNT_RECURSIVE) > 0){
+                return ['error' => "Have movement linked to this category, cannot delete"];
+            }
+
+            $sql = "DELETE FROM categories WHERE id=:id and user=:user;";
+
+            $prep = $conn->prepare($sql, [
+                "id" => $data['id'],
+                "user" => $data['user']
+            ]);
+
+            $prep->execute();
+
+            if($prep[0]->rowCount() > 0){
+                return true;
+            }
+            return false;
+
+        }catch(PDOException $e){
+            return ['error' => $e->getMessage()];
+        }catch(Exception $e){
+            return ['error' => $e->getMessage()];
+        }
     }
 
     public function get(int $id): ?Model
