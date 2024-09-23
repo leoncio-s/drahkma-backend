@@ -19,7 +19,7 @@ class Categories implements Model
     }
 
 
-    public function getId() : int {
+    public function getId() : int | null{
         return $this->id;
     }
 
@@ -27,7 +27,7 @@ class Categories implements Model
         return $this->description;
     }
 
-    public function getUserId(): int{
+    public function getUserId(): int | null{
         return $this->user;
     }
 
@@ -102,7 +102,7 @@ class Categories implements Model
         $dataToret = ['description' => $description, "user" => $user];
 
         if($update){
-            array_push($dataToret, ['id' => $id]);
+            $dataToret['id'] =$id;
         }
 
         if(count($error, COUNT_RECURSIVE) > 0) return ['errors' => $error, "data" => $dataToret];

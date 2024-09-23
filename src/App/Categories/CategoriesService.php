@@ -33,11 +33,11 @@ class CategoriesService implements ServicesInterface{
         return $this->repository->getByUser($idUser);
     }
 
-    public function update(array $data): ?Model
+    public function update(array $data): Model | array | null
     {
         if(isset($data['user'])){
             // $data['user'] = $data['user'];
-            $cat = Categories::validate($data);
+            $cat = Categories::validate($data, update:true);
             if(isset($data['errors'])){
                 return $cat;
             }else{

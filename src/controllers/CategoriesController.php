@@ -54,7 +54,10 @@ class CategoriesController {
                 $data['user'] = Autenticated::getUserAuth()['id'];
 
                 $ret = $this->service->update($data);
-                return Response::json($ret);
+                if(isset($ret['error'])){
+                    return Response::json($ret, HttpStatus::HTTP_BAD_REQUEST);
+                }
+                return Response::json($ret->toArray());
             }else{
                 return Response::json([], HttpStatus::HTTP_BAD_REQUEST);
             }
@@ -70,11 +73,15 @@ class CategoriesController {
             ];
 
             $retSrv = $this->service->delete($data);
+
             if(isset($retSrv['error'])){
                 return Response::json($retSrv, HttpStatus::HTTP_BAD_REQUEST);
+            }elseif($retSrv){
+                return Response::json([]);
+            }else{
+                return Response::json([$retSrv], HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
             }
-
-            return Response::json($retSrv);
+            //
         }
     }
 }
