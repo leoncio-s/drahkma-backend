@@ -38,7 +38,7 @@ class CategoriesService implements ServicesInterface{
         if(isset($data['user'])){
             // $data['user'] = $data['user'];
             $cat = Categories::validate($data, update:true);
-            if(isset($data['errors'])){
+            if(isset($cat['errors'])){
                 return $cat;
             }else{
                 $ret = $this->repository->update($cat['data']);

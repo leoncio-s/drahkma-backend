@@ -33,20 +33,26 @@ class BankAccountsService implements ServicesInterface{
         return $this->repository->getByUser($idUser);
     }
 
-    public function update(array $data): ?Model
+    public function update(array $data): Model | array | null
     {
         if(isset($data['user'])){
-            $data['user'] = $data['user'];
-            return $this->repository->update($data);
+            // $data['user'] = $data['user'];
+            $cat = BankAccounts::validate($data, update:true);
+            if(isset($cat['errors'])){
+                return $cat;
+            }else{
+                $ret = $this->repository->update($data);
+                return $ret;
+            }
+            
         }
+        return null;
     }
 
-    public function delete(array $data): bool | int | null
+    public function delete(array $data): bool | int | null | array
     {
-        if(isset($data['user'])){
-            $data['user'] = $data['user'];
-            // return $this->repository->delete($data);
-            return 0;
+        if(isset($data['user']) && isset($data['id'])){
+            return $this->repository->delete($data);
         }
         return 0;
     }

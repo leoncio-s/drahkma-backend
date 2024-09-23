@@ -6,6 +6,8 @@ use App\Interfaces\Model;
 use App\Users\User;
 use App\Validators\StringValidator;
 
+use function PHPSTORM_META\type;
+
 class BankAccounts implements Model
 {
 
@@ -78,7 +80,7 @@ class BankAccounts implements Model
     }
 
     public function setBankName(?string $bankName) : void{
-        $this->bankName = (preg_match("/^[A-Za-z0-9-]{3,100}$/", $bankName))? $bankName : null;
+        $this->bankName = (preg_match("/^[A-Za-z0-9-\s]{3,100}$/", $bankName))? $bankName : null;
     }
 
     public function setAgency(?string $agency) : void{
@@ -106,7 +108,7 @@ class BankAccounts implements Model
     public function toArray():array{
         return  [
             'id' => $this->getId(),
-            // 'user' => $this->getUserId(),
+            'user' => $this->getUserId(),
             'bankCode' => $this->getBankCode(),
             'bankName' => $this->getBankName(),
             'agency' => $this->getAgency(),
@@ -134,15 +136,16 @@ class BankAccounts implements Model
         return $this;
     }
 
-    public static function validate(array $data) : array{
+    public static function validate(array $data, bool $update = false) : array{
         $erros=[
+            "id" => [],
             "bankCode"  => [],
             "bankName"  => [],
             "agency"    => [],
             "accountNumber" => []
         ];
         $id = (isset($data['id']) && gettype($data['id']) == 'integer') ? $data['id'] : null;
-        $userId = (isset($data['user']) && $data['user'] instanceof User) ? $data['user'] : null;
+        $userId = (isset($data['user']) && gettype($data['user'])=="integer") ? $data['user'] : null;
         $bankCode = (isset($data['bankCode']) && gettype($data['bankCode']) == 'string') ? $data['bankCode'] : null;
         $bankName = (isset($data['bankName']) && gettype($data['bankName']) == 'string') ? $data['bankName'] : null;
         $agency = (isset($data['agency']) && gettype($data['agency']) == 'string') ? $data['agency'] : null;
@@ -159,8 +162,8 @@ class BankAccounts implements Model
 
         if($bankName == null || $bankName == ""){
             array_push($erros['bankName'], "This field is required");
-        }elseif(strlen($bankName) <= 0 || strlen($bankName) > 100){
-            array_push($erros['bankName'], "This field size is between 1 and 10");
+        }elseif(strlen($bankName) < 3 || strlen($bankName) > 100){
+            array_push($erros['bankName'], "This field size is between 3 and 10");
         }elseif(!StringValidator::descrValidate($bankName)){
             array_push($erros['bankName'], "This field is invalid");
         }
@@ -179,6 +182,14 @@ class BankAccounts implements Model
             array_push($erros['accountNumber'], "This field size is between 2 and 10");
         }elseif(!StringValidator::onlyNumbers($agency)){
             array_push($erros['accountNumber'], "This field is invalid");
+        }
+
+        if($update){
+            if(!isset($data['id'])){
+                array_push($erros['id'], 'this field is required');
+            }elseif(gettype($data['id']) == 'integer' && $data['id'] <= 0){
+                array_push($erros['id'], 'invalid value for field');
+            }
         }
 
         foreach($erros as $k=>$v){
