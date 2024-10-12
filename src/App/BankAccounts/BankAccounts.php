@@ -3,6 +3,8 @@
 namespace App\BankAccounts;
 
 use App\Interfaces\Model;
+use App\Logging\Log;
+use App\Logging\LogTypeEnum;
 use App\Users\User;
 use App\Validators\StringValidator;
 
@@ -80,15 +82,15 @@ class BankAccounts implements Model
     }
 
     public function setBankName(?string $bankName) : void{
-        $this->bankName = (preg_match("/^[A-Za-z0-9-\s]{3,100}$/", $bankName))? $bankName : null;
+        $this->bankName = ($bankName != null && StringValidator::descrValidate($bankName)) ? $bankName : null;
     }
 
     public function setAgency(?string $agency) : void{
-        $this->agency = (preg_match("/^[\d-]{3,8}$/", $agency)) ? $agency : null;
+        $this->agency = ($agency != null && StringValidator::onlyNumbers($agency)) ? $agency : null;
     }
 
     public function setAccountNumber(?string $accountNumber) : void{
-        $this->accountNumber = (preg_match("/^[\d-]{3,10}$/", $accountNumber)) ? $accountNumber : null;
+        $this->accountNumber = ($accountNumber != null && StringValidator::onlyNumbers($accountNumber)) ? $accountNumber : null;
     }
 
 

@@ -31,11 +31,14 @@ class CardsService implements ServicesInterface{
         return $this->repository->getByUser($idUser);
     }
 
-    public function update(array $data): ?Model
+    public function update(array $data): array | Model | null
     {
         if(isset($data['user'])){
-            $data['user'] = $data['user'];
-            return $this->repository->update($data);
+            $ret = Cards::validate($data);
+            if(!isset($ret["errors"])){
+                return $this->repository->update($data);
+            }
+            return $ret;
         }
     }
 
@@ -43,8 +46,8 @@ class CardsService implements ServicesInterface{
     {
         if(isset($data['user'])){
             $data['user'] = $data['user'];
-            // return $this->repository->delete($data);
-            return 0;
+            return $this->repository->delete($data);
+            // return 0;
         }
         return 0;
     }

@@ -9,6 +9,8 @@ use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
 use App\Interfaces\RepositoryInterface;
 use App\Items\Items;
+use App\Logging\Log;
+use App\Logging\LogTypeEnum;
 use App\TransfersBank\TransferBankRepository;
 use Exception;
 use PDOException;
@@ -64,7 +66,7 @@ class ItemsRepository implements RepositoryInterface{
 
             if(isset($data['category'])){
                 $cat = $this->catRepo->getByIdAndUser($data['category'], $data['user']);
-                if($cat == null) throw new Exception("invalid value for card field", 401);
+                if($cat == null) throw new Exception("invalid value for category field", 401);
             }
 
             $sql = "INSERT INTO items(user, description, expense, value, date, category, card, transfer_bank) values(:user, :description, :expense, :value, :date, :category, :card, :transfer_bank);";
@@ -76,9 +78,11 @@ class ItemsRepository implements RepositoryInterface{
             }
             
         }catch(PDOException $e){
-            throw $e;
+            // throw $e;
+            new Log($e, LogTypeEnum::ERROR);
             return ['error' => $e->getCode()];
         }catch(Exception $e){
+            new Log($e, LogTypeEnum::ERROR);
             return ['error' => $e->getCode()];
         }
 

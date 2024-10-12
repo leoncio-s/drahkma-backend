@@ -5,6 +5,7 @@ namespace App\Items;
 use App\Cards\Cards;
 use App\Categories\Categories;
 use App\Interfaces\Model;
+use App\Logging\Log;
 use App\TransfersBank\TransferBank;
 use App\Users\User;
 use App\Validators\StringValidator;
@@ -177,11 +178,11 @@ class Items implements Model
         $description = (isset($data['description'])) ? $data['description'] : null;
         $expense = (isset($data['expense']) && is_bool($data['expense'])) ? $data['expense'] : true;
         $value = (isset($data['value']) && is_float($data['value'])) ? $data['value'] : null;
-        $date = (isset($data['date'])) ? DateTime::createFromFormat('Ymd', $data['value']) : null;
+        $date = (isset($data['date'])) ? DateTime::createFromFormat('Ymd', $data['date']) : null;
         $category = (isset($data['category']) && is_int($data['category'])) ? $data['category'] : null;
         $card = (isset($data['card']) && is_int($data['card'])) ? $data['card'] : null;
         $transfer_bank = (isset($data['transfer_bank'])) ? TransferBank::validate($data['transfer_bank']) : null;
-
+        
         $errors =   [
             'description'   => [],
             'expense'       => [],
@@ -235,7 +236,7 @@ class Items implements Model
             'category'      => $category,
             'date'          => ($date != null) ? $date->format('Ymd') : null,
             'card'          => $card,
-            'transfer_bank' => $transfer_bank['data']
+            'transfer_bank' => ($transfer_bank != null) ? $transfer_bank['data'] : null
         ];
         return ["data" => $data2];
     }

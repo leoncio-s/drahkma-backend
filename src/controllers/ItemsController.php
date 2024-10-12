@@ -8,6 +8,7 @@ use controllers\Http\Autenticated;
 use controllers\Http\HttpStatus;
 use controllers\Http\Request;
 use controllers\Http\Response;
+use App\Logging\Log;
 use DateTime;
 
 class ItemsController {

@@ -4,6 +4,7 @@ namespace controllers;
 
 use App\Cards\Cards;
 use App\Cards\CardsService;
+use App\Users\User;
 use controllers\Http\Autenticated;
 use controllers\Http\HttpStatus;
 use controllers\Http\Request;
@@ -40,6 +41,37 @@ class CardsController {
                 }else{
                     return Response::json($ret, HttpStatus::HTTP_BAD_REQUEST);
                 }
+            }
+        }
+    }
+
+    public function update(){
+        if(Autenticated::autenticated()){
+            $data = Request::getAll();
+            $user = Autenticated::getUserAuth();
+            $data['user'] = $user['id'];
+            $ret = $this->service->update($data);
+            // var_dump($ret);
+            if($ret instanceof Cards){
+                return Response::json($ret->toArray());
+            }else{
+                return Response::json((array)$ret, HttpStatus::HTTP_BAD_REQUEST);
+            }
+        }
+    }
+
+    public function delete(int $id){
+        if(Autenticated::autenticated()){
+            $user = Autenticated::getUserAuth();
+            $data = [
+                'id' => $id,
+                'user' => $user['id']
+            ];
+            $ret = $this->service->delete($data);
+            if(isset($ret["errors"])){
+                return Response::json((array) $ret, HttpStatus::HTTP_BAD_REQUEST);
+            }else{
+                return Response::json([]);
             }
         }
     }

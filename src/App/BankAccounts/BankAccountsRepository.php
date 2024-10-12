@@ -6,6 +6,8 @@ use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
 use App\Interfaces\RepositoryInterface;
 use App\BankAccounts\BankAccounts;
+use App\Logging\Log;
+use App\Logging\LogTypeEnum;
 use Exception;
 use PDOException;
 
@@ -54,9 +56,11 @@ class BankAccountsRepository implements RepositoryInterface{
             }
             
         }catch(PDOException $e){
-            throw $e;
+            // throw $e;
+            new Log($e, LogTypeEnum::ERROR);
             return ['error' => $e->getCode()];
         }catch(Exception $e){
+            new Log($e, LogTypeEnum::ERROR);
             return ['error' => $e->getCode()];
         }
 

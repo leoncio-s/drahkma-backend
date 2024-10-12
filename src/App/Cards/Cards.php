@@ -6,6 +6,7 @@ use App\Cards\Enums\CardTypeEnum;
 use App\Cards\Enums\CardFlagsEnum;
 use App\Interfaces\Model;
 use App\Validators\StringValidator;
+use DateTime;
 
 class Cards implements Model
 {
@@ -49,28 +50,38 @@ class Cards implements Model
         return $this->flag->name;
     }
     public function getExpiresAt():  ?string{
+        // $dt = date_parse_from_format('My', $this->expires_at);:
+        // $nt = DateTime::createFromFormat('my', $this->expires_at);
+        // return date_format($nt, 'm/Y');
         return $this->expires_at;
     }
+
+    public function getExpiresAtToReturn():  ?string{
+        // $dt = date_parse_from_format('My', $this->expires_at);:
+        $nt = DateTime::createFromFormat('my', $this->expires_at);
+        return date_format($nt, 'm/Y');
+    }
+
     public function getLast4Digits(): ?string{
         return $this->last_4_digits;
     }
     public function getInvoiceDay(){
         // date_default_timezone_set('America/Sao_Paulo');
 
-        $day = $this->invoice_day;
-        $month = date('m', time());
-        $year = date('Y', time());
-        $time = mktime(0,0,0, $month, $day, $year);
+        // $day = $this->invoice_day;
+        // $month = date('m', time());
+        // $year = date('Y', time());
+        // $time = mktime(0,0,0, $month, $day, $year);
 
-        $dayOfWeek = date('w', $time);
+        // $dayOfWeek = date('w', $time);
 
-        if($dayOfWeek == 0){
-        	$time = strtotime('+1 days ', $time);
-        }else if($dayOfWeek == 6){
-        	$time = strtotime('+2 days ', $time);
-        }
+        // if($dayOfWeek == 0){
+        // 	$time = strtotime('+1 days ', $time);
+        // }else if($dayOfWeek == 6){
+        // 	$time = strtotime('+2 days ', $time);
+        // }
 
-        return date('Ymd', $time);
+        return $this->invoice_day;
     }
 
     public function setId(?int $id) : void{
@@ -107,7 +118,7 @@ class Cards implements Model
                 'type' => $this->getType(),
                 'brand' => $this->getBrand(),
                 'flag' => $this->getFlag(),
-                'expires_at' => $this->getExpiresAt(),
+                'expires_at' => $this->getExpiresAtToReturn(),
                 'last_4_digits' => $this->getLast4Digits(),
                 'invoice_day' => $this->getInvoiceDay()
             ]
@@ -122,7 +133,7 @@ class Cards implements Model
                 'type' => $this->getType(),
                 'brand' => $this->getBrand(),
                 'flag' => $this->getFlag(),
-                'expires_at' => $this->getExpiresAt(),
+                'expires_at' => $this->getExpiresAtToReturn(),
                 'last_4_digits' => $this->getLast4Digits(),
                 'invoice_day' => $this->getInvoiceDay()
             ];
@@ -153,13 +164,15 @@ class Cards implements Model
         return $this;
     }
 
-    public static function validate(array $data): array{
+    public static function validate(array $data, bool $update = false): array{
         $cardTypeEnum = (isset($data['type'])) ? CardTypeEnum::tryFrom($data['type']) : null;
         $brand = (isset($data['brand'])) ? $data['brand'] : null;
         $cardFlagsEnum = (isset($data['flag'])) ? CardFlagsEnum::tryFrom($data['flag']) : null;
         $expires_at = (isset($data['expires_at'])) ? date_parse_from_format('my', $data['expires_at']) : null;
         $last4Digits = (isset($data['last_4_digits'])) ? $data['last_4_digits'] : null;
         $invoice_day = (isset($data['invoice_day']) && is_int($data['invoice_day'])) ? $data['invoice_day'] : 1;
+        $id = (isset($data['id']) && is_int($data['id'])) ? $data['id'] : null;
+
 
         $errors = [ 
             'type' => [],
@@ -176,7 +189,7 @@ class Cards implements Model
 
         if($brand == null || $brand == ""){
             array_push($errors['brand'], "This field is required");
-        }elseif(strlen($brand) <= 3 || strlen($brand) > 50){
+        }elseif(strlen($brand) < 3 || strlen($brand) > 50){
             array_push($errors['brand'], "Min. size is 3 and max. is 50");
         }elseif(!StringValidator::descrValidate($brand)) array_push($errors['brand'], "Invalid value");
 
@@ -194,6 +207,14 @@ class Cards implements Model
             if(count($errors[$k])==0) unset($errors[$k]);
         }
 
+        if($update){
+            if($id == null){
+                $errors['id'] = ["this field is required"];
+            }else if($id < 0){
+                $errors['id'] = ["invalid value"];
+            }
+        }
+
         if(count($errors) > 0) return ["errors" => $errors, "data" => $data];
         else{
 
@@ -206,6 +227,9 @@ class Cards implements Model
                     'last_4_digits' => $last4Digits,
                     'invoice_day' => $invoice_day
             ];
+            if($update){
+                $toRet['id'] = $id;
+            }
             return ['data' => $toRet];
         }
     }

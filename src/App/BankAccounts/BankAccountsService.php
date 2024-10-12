@@ -6,6 +6,8 @@ use App\BankAccounts\BankAccountsRepository;
 use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\BankAccounts\BankAccounts;
+use App\Logging\Log;
+use App\Logging\LogTypeEnum;
 
 class BankAccountsService implements ServicesInterface{
 
@@ -17,8 +19,12 @@ class BankAccountsService implements ServicesInterface{
 
     public function create(array $data): Model | array | null
     {
+
+        // new Log($data, LogTypeEnum::DEBUG);
         if(isset($data['user'])){
             $validation = BankAccounts::validate($data);
+
+            // new Log($validation, LogTypeEnum::DEBUG);
             if(isset($validation['errors'])){
                 return $validation;
             }
@@ -35,9 +41,12 @@ class BankAccountsService implements ServicesInterface{
 
     public function update(array $data): Model | array | null
     {
+
+        
+
         if(isset($data['user'])){
-            // $data['user'] = $data['user'];
             $cat = BankAccounts::validate($data, update:true);
+            // new Log($cat, LogTypeEnum::DEBUG);
             if(isset($cat['errors'])){
                 return $cat;
             }else{

@@ -16,6 +16,8 @@ class CardsRouteApi extends ApiRoute{
             $controller = new CardsController($service);
             $this->router->get("/", fn()=>$controller->getAll());
             $this->router->post("/", fn()=>$controller->create());
+            $this->router->put("/", fn()=>$controller->update());
+            $this->router->delete("/{id}", fn(int $id) => $controller->delete($id));
         });
     }
 }

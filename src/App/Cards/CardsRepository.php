@@ -6,6 +6,8 @@ use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
 use App\Interfaces\RepositoryInterface;
 use App\Cards\Cards;
+use App\Logging\Log;
+use App\Logging\LogTypeEnum;
 use Exception;
 use PDOException;
 
@@ -70,14 +72,118 @@ class CardsRepository implements RepositoryInterface{
         return $account;
     }
 
-    public function update(array $data): ?Model
+    public function update(array $data): array | null |Model
     {
-        return null;
+        $account = null;
+
+        try{
+            $sqlSelect = "SELECT * FROM cards WHERE user=:user and last_4_digits=:last_4_digits and flag=:flag and type=:type and id<>:id limit 1;";
+            $select = $this->db->select($sqlSelect,            
+            [
+                "user" => $data['user'],
+                "type" => $data["type"],
+                "last_4_digits" => $data["last_4_digits"],
+                "flag" => $data["flag"],
+                "id" => $data['id']
+            ]);
+
+            if(count($select) > 0){
+                $account = new Cards();
+                $account->toObject($select[0]);
+                return ["errors" => "Já existe um cartão com esses dados", "data" => $account];
+            }else{
+                $sql = "UPDATE cards
+                    SET type=:type, 
+                        brand=:brand,
+                        flag=:flag,
+                        expires_at=:expires_at,
+                        last_4_digits=:last_4_digits, invoice_day=:invoice_day
+                    WHERE id=:id and user=:user;";
+
+                $fields = [
+                    "user" => $data['user'],
+                    "type" => $data['type'],
+                    "brand" => $data['brand'],
+                    "flag" => $data['flag'], 
+                    "expires_at" => $data['expires_at'],
+                    "last_4_digits" => $data['last_4_digits'],
+                    "invoice_day" => $data['invoice_day'],
+                    "id" => $data['id']
+                ];
+
+                new Log($data, LogTypeEnum::ERROR);
+
+                $dbConn = $this->db->getDBConn();
+                $dbConn->beginTransaction();
+                try{
+                    $prepare = $dbConn->prepare($sql);
+                    $prepare->execute($fields);
+
+                    // if($prepare->rowCount() >= 1){
+                        
+                    // }
+                    $dbConn->commit();
+                    $dat = $this->db->select("SELECT * FROM cards WHERE id=?", [$data['id']]);
+
+                    if(count($dat) > 0){
+                        $account = new Cards();
+                        $account->toObject($dat[0]);
+                        return $account;
+                    }
+                }catch(Exception $e){
+                    throw $e;
+                }
+            }
+            
+        }catch(PDOException $e){
+            // throw $e;
+            new Log($e, LogTypeEnum::ERROR);
+            return ['errors' => $e->getCode()];
+        }catch(Exception $e){
+            // throw $e
+            new Log($e, LogTypeEnum::ERROR);
+            return ['errors' => $e->getCode()];
+        }
+
+        return $account;
     }
 
-    public function delete($data): bool
+public function delete($data): bool | array
     {
-        return false;
+
+        $it = "SELECT count(*) as count FROM items where card=:id and user=:user";
+        $select = $this->db->select($it, ['id'=>$data['id'], "user"=>$data['user']]);
+
+        if($select[0]['count'] > 0){
+            return ['errors' => "Have movement linked to this bank account, cannot delete"];
+        }
+
+
+        $conn = $this->db->getDBConn();
+        $conn->beginTransaction();
+        try{
+            $sql = "DELETE FROM cards WHERE id=:id and user=:user";
+
+            $prep = $conn->prepare($sql);
+
+            $prep->execute([
+                "id" => $data['id'],
+                "user" => $data['user']
+            ]);
+
+            if($prep->rowCount() > 0){
+                $conn->commit();
+                return true;
+            }
+            return false;
+
+        }catch(PDOException $e){
+            $conn->rollBack();
+            return ['errors' => $e->getMessage()];
+        }catch(Exception $e){
+            $conn->rollBack();
+            return ['errors' => $e->getMessage()];
+        }
     }
 
     public function get(int $id): ?Model
@@ -120,8 +226,9 @@ class CardsRepository implements RepositoryInterface{
     public function getByIdAndUser(int $id, int $userId): ?Model
     {
         try{
-            $sql = "Select * from bank_accounts where id=? and user=?;";
+            $sql = "Select * from cards where id=? and user=?;";
             $data = $this->db->select($sql, [$id, $userId]);
+
             if(count($data)>0){
                 $account = new Cards();
                 $account->toObject($data[0]);
