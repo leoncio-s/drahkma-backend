@@ -27,6 +27,12 @@ class TransferBankRepository implements RepositoryInterface{
         $account = null;
 
         try{
+            $fields = [
+                "user" => $data['user'],
+                "type" => $data['type'],
+                "bank_account" => $data["bank_account"],
+                "description" => $data["description"]
+            ];
             $bnkAccount = $this->bnkRepo->getByIdAndUser($data['bank_account'], $data['user']);
 
             if($bnkAccount == null) throw new Exception("Invalid bank_account", 403);
@@ -34,7 +40,7 @@ class TransferBankRepository implements RepositoryInterface{
             $sql = "INSERT INTO transfer_bank(user, type, bank_account, description) values(:user, :type, :bank_account, :description);";
 
             // var_dump($data);
-            $prepare = $this->db->insert($sql, $data);
+            $prepare = $this->db->insert($sql, $fields);
         
             if(is_numeric($prepare)) return $this->get((int)$prepare);
             

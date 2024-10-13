@@ -103,15 +103,20 @@ class TransferBank implements Model
         $type = (isset($data['type'])) ? TransferBankEnum::tryFrom($data['value']) : null;
         $description = (isset($data['description'])) ? $data['description'] : null;
         $user = (isset($data['user']))? $data['user'] : null;
+        $bank_account = (isset($data['bank_account']) ? $data['bank_account'] : null);
 
         $errors['type'] = [];
         $errors['description'] = [];
+        $errors['bank_account'] = [];
 
         if($type == null) array_push($errors['type'], "Field is required");
         
         if($description == null || $description == "") array_push($errors['description'], "This field is required");
         elseif(!(strlen($description) >=5 && strlen($description) <= 250)) array_push($errors['description'], "Min. lenght is 5 and max. 250");
         elseif(!StringValidator::descrValidate($description)) array_push($errors['description'], "Value invalid");
+
+        if($bank_account == null) array_push($errors['bank_account'], "This field is required");
+        elseif($bank_account < 1)array_push($errors['bank_account'], "Value invalid");
 
         foreach($errors as $k=>$v){
             if(count($errors[$k])>0) unset($errors[$k]);
