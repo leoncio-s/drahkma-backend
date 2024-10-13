@@ -6,6 +6,7 @@ use App\Items\ItemsRepository;
 use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\Items\Items;
+use App\Users\User;
 use controllers\Http\Autenticated;
 use DateTime;
 
@@ -38,8 +39,11 @@ class ItemsService implements ServicesInterface{
     public function update(array $data): ?Model
     {
         if(isset($data['user'])){
-            $data['user'] = $data['user'];
-            return $this->repository->update($data);
+            $validate = Items::validate($data, true);
+            if(!isset($validate['errors'])){
+                return $this->repository->update($data);
+            }
+            return $validate;
         }
     }
 

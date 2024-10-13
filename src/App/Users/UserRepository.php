@@ -3,6 +3,7 @@
 namespace App\Users;
 
 use App\Database\MySqlDatabaseImpl;
+use App\Logging\Log;
 use App\Users\User;
 use DateTime;
 use Exception;
@@ -109,18 +110,24 @@ class UserRepository implements UserRepositoryInterface
         return (bool) $ret;
     }
 
-    public function getByEmail(string $email): User | null
+    public function getByEmail(string $email): User | null | array
     {
-        $sql = "SELECT * FROM users where email=? limit 1;";
+        try{
+            $sql = "SELECT * FROM users where email=? limit 1;";
+        
+            $ret = $this->db->select($sql, [$email]);
+    
+            if (count($ret) == 0) return null;
+            $user = new User();
+    
+            $user->toObject($ret[0]);
+    
+            return $user;
+        }catch(PDOException $e){
+            new Log($e);
+            return ['errors'=>$e];
+        }
 
-        $ret = $this->db->select($sql, [$email]);
-
-        if (count($ret) == 0) return null;
-        $user = new User();
-
-        $user->toObject($ret[0]);
-
-        return $user;
     }
 
     public function updatePassword(int $id, string $password): User

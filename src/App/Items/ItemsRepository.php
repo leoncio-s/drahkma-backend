@@ -47,13 +47,6 @@ class ItemsRepository implements RepositoryInterface{
 
         try{
             if($data['transfer_bank'] != null){
-                // $inst_tB = "insert into transfer_bank(user, type, description, bank_account) values(:user, :type, :description, :bank_account);";
-                // $transfer_bank = $this->db->insert($inst_tB, [
-                //     "user"  => $data['user'],
-                //     "type"  => $data['transfer_bank']['type'],
-                //     "description"   => $data['transfer_bank']['description'],
-                //     "bank_account"  => $data['transfer_bank']['bank_account']
-                // ]);
                 $data['transfer_bank']['user'] = $data['user'];
                 $transfer_bank= $this->trfBRepo->save($data["transfer_bank"]);
 
@@ -91,7 +84,67 @@ class ItemsRepository implements RepositoryInterface{
 
     public function update(array $data): ?Model
     {
-        return null;
+        $transfer_bank = null;
+        $item = null;
+        $fields = [
+            'id' => $data['id'],
+            'user' => $data['user'],
+            'description'   => $data['description'],
+            "value"     => $data['value'], 
+            "date"      => $data['date'],
+            "category"  => $data['category'],
+            "card"      => $data['card'],
+            "transfer_bank" => null
+        ];
+
+        try{
+            if($data['transfer_bank'] != null){
+                $data['transfer_bank']['user'] = $data['user'];
+                $transfer_bank= $this->trfBRepo->update($data["transfer_bank"]);
+
+                $fields['transfer_bank'] = $transfer_bank->getId();
+            }
+            if(isset($data['card'])){
+                $card = $this->cardRepo->getByIdAndUser($data['card'], $data['user']);
+                if($card == null) throw new Exception("invalid value for card field", 401);
+            }
+
+            if(isset($data['category'])){
+                $cat = $this->catRepo->getByIdAndUser($data['category'], $data['user']);
+                if($cat == null) throw new Exception("invalid value for category field", 401);
+            }
+
+            $dbConn = $this->db->getDBConn();
+            $dbConn->beginTransaction();
+            try{
+                $sql = "UPDATE items SET description=:description, value=:value, date=:date, category=:category, card=:card WHERE user=:user and id=:id;";
+                $prepare = $dbConn->prepare($sql);
+                $prepare->execute($fields);
+
+                $dbConn->commit();
+
+                if($prepare->rowCount() > 0){
+                    return $this->getByIdAndUser($data['id'], $data['user']);
+                }else{
+                    return null;
+                }
+
+            }catch(PDOException $e){
+                $dbConn->rollBack();
+                throw $e;
+            }
+            
+            return null;
+        }catch(PDOException $e){
+            // throw $e;
+            new Log($e, LogTypeEnum::ERROR);
+            return ['error' => $e->getCode()];
+        }catch(Exception $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return ['error' => $e->getCode()];
+        }
+
+        return $item;
     }
 
     public function delete($data): bool
@@ -131,6 +184,42 @@ where i.id=?";
             return null;
         }catch(PDOException $e){
             return null;
+        }
+    }
+
+    public function getByIdAndUser(int $id, int $userId): null | array | Items
+    {
+        try{
+            $sql = "select i.*, JSON_OBJECT('id', c.id, 'description', c.description) as category,
+CASE WHEN i.card is not null then
+	json_object('id', c2.id, 'type', c2.`type`, 'brand', c2.brand, 'expires_at', c2.expires_at, 'flag', c2.flag, 'last_4_digits', c2.last_4_digits, 'invoice_day', c2.invoice_day)
+else
+	i.card 
+end as card,
+case when i.transfer_bank is not null then
+	json_object('id', t.id,'description', t.description, 'type', t.`type`,'bank_account',
+	JSON_OBJECT('id', b.id, 'bankName', b.bankName, 'agency', b.agency, 'accountNumber', b.accountNumber, 'accountNumber', b.accountNumber, 'bankCode', b.bankCode))
+else
+	i.transfer_bank 
+end as transfer_bank
+from items i
+left join categories c on c.id = i.category and c.`user` = i.`user` 
+left join cards c2 on c2.id = i.card and c2.`user` = i.`user` 
+left join transfer_bank t on t.id = i.transfer_bank
+left join bank_accounts b on b.id=t.bank_account
+where i.id=? and i.user=?";
+            $data = $this->db->select($sql, [$id, $userId]);
+            
+            if(count($data)>0){
+                $item = new Items();
+                $item->toObject($data[0]);
+                return $item;
+            }
+
+            return null;
+        }catch(PDOException $e){
+            new Log($e);
+            return ["errors" => $e->getCode()];
         }
     }
 

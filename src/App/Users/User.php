@@ -185,7 +185,7 @@ class User implements Model
         ];
     }
 
-    public static function validate(array $data): array{
+    public static function validate(array $data, bool $update = false): array{
         $errors = [
             "fullname" =>[],
             "email" =>[],
@@ -260,6 +260,17 @@ class User implements Model
             $phone_number = isset($data['phone_number']) ? $data['phone_number'] : null;
         }
         // fim validação do telefone
+
+        // validação update
+        if($update){
+            $errors['id'] = [];
+            if(!isset($data['id'])){
+                array_push($errors['id'], "This field is required");
+            }
+            if(isset($data['id']) && $data['id'] < 1){
+                array_push($errors['id'], "Invalid value");
+            }
+        }
 
         if(count($errors, COUNT_RECURSIVE) > 5){
             $data['conf_password'] = $data['password'];

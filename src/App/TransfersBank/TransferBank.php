@@ -98,7 +98,7 @@ class TransferBank implements Model
         return $this;
     }
 
-    public static function validate(array $data): array
+    public static function validate(array $data, bool $update=false): array
     {
         $type = (isset($data['type'])) ? TransferBankEnum::tryFrom($data['value']) : null;
         $description = (isset($data['description'])) ? $data['description'] : null;
@@ -117,6 +117,16 @@ class TransferBank implements Model
 
         if($bank_account == null) array_push($errors['bank_account'], "This field is required");
         elseif($bank_account < 1)array_push($errors['bank_account'], "Value invalid");
+
+        if($update){
+            $errors['id'] = [];
+            if(!isset($data['id'])){
+                array_push($errors['id'], "This field is required");
+            }
+            if(isset($data['id']) && $data['id'] < 1){
+                array_push($errors['id'], "Invalid value");
+            }
+        }
 
         foreach($errors as $k=>$v){
             if(count($errors[$k])>0) unset($errors[$k]);

@@ -56,9 +56,16 @@ class ItemsController {
         }
     }
 
-    public function update(int $id){
+    public function update(){
         if(Autenticated::autenticated()){
-            
+            $user = Autenticated::getUserAuth();
+            $data = Request::getAll();
+            $data['user'] = $user['id'];
+            $ret = $this->service->update($data);
+            if($ret instanceof Items){
+                return Response::json($ret->toArray());
+            }
+            return Response::json($ret, HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

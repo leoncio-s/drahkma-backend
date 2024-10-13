@@ -27,6 +27,7 @@ class ItemsRouteApi extends ApiRoute{
             $controller = new ItemsController($this->service);
             $this->router->get("/", fn()=>$controller->getAll());
             $this->router->post("/", fn()=>$controller->create());
+            $this->router->put("/", fn()=>$controller->update());
             $this->router->get("/inflow", fn()=>$controller->inflow());
             $this->router->get("/outflow", fn()=>$controller->outflow());
             $this->router->get("/amounts", fn()=>$controller->amounts());

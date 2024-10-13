@@ -171,7 +171,7 @@ class Items implements Model
     }
 
     
-    public static function validate(array $data): array
+    public static function validate(array $data, bool $update=false): array
     {
         // $id = (isset($data['id']) && is_int($data['id'])) ? $data['id'] : null;
         $user = (isset($data['user']) && is_int($data['user'])) ? $data['user'] : null;
@@ -181,7 +181,7 @@ class Items implements Model
         $date = (isset($data['date'])) ? DateTime::createFromFormat('Ymd', $data['date']) : null;
         $category = (isset($data['category']) && is_int($data['category'])) ? $data['category'] : null;
         $card = (isset($data['card']) && is_int($data['card'])) ? $data['card'] : null;
-        $transfer_bank = (isset($data['transfer_bank'])) ? TransferBank::validate($data['transfer_bank']) : null;
+        $transfer_bank = (isset($data['transfer_bank'])) ? TransferBank::validate($data['transfer_bank'], $update) : null;
         
         $errors =   [
             'description'   => [],
@@ -216,6 +216,16 @@ class Items implements Model
         }
 
         if($category == null) array_push($errors['category'], "This field is required");
+
+        if($update){
+            $errors['id'] = [];
+            if(!isset($data['id'])){
+                array_push($errors['id'], "This field is required");
+            }
+            if(isset($data['id']) && $data['id'] < 1){
+                array_push($errors['id'], "Invalid value");
+            }
+        }
 
         foreach($errors as $k => $v){
             if(count($errors[$k], COUNT_RECURSIVE) == 0) unset($errors[$k]);

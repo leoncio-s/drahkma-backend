@@ -6,6 +6,7 @@ use App\BankAccounts\BankAccountsRepository;
 use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
 use App\Interfaces\RepositoryInterface;
+use App\Logging\Log;
 use App\TransfersBank\TransferBank;
 use Exception;
 use PDOException;
@@ -54,9 +55,57 @@ class TransferBankRepository implements RepositoryInterface{
         return $account;
     }
 
-    public function update(array $data): ?Model
+    public function update(array $data): array | null | TransferBank
     {
-        return null;
+        $account = null;
+        try{
+            $fields = [
+                "id" => $data['id'],
+                "user" => $data['user'],
+                "type" => $data['type'],
+                "bank_account" => $data["bank_account"],
+                "description" => $data["description"]
+            ];
+
+            $bnkAccount = $this->bnkRepo->getByIdAndUser($data['bank_account'], $data['user']);
+
+            if($bnkAccount == null) throw new Exception("Invalid bank_account", 403);
+
+            $dbCon = $this->db->getDBConn();
+            $dbCon->beginTransaction();
+            try{
+
+                $sql = <<<EOD
+UPDATE transfer_bank
+SET type=:type, 
+bank_account=:bank_account,
+description=:description
+WHERE id=:id and user=:user
+EOD;        
+            $prepare = $dbCon->prepare($sql);
+            $prepare->execute($fields);
+
+            $dbCon->commit();
+            
+            if($prepare->rowCount() >= 1){
+                return $this->getByIdAndUser($data['id'], $data['user']);
+            }else{
+                return ['errors' => "Problem to update item"];
+            }
+            }catch(Exception $e){
+                $dbCon->rollBack();
+                throw $e;
+            }
+            
+        }catch(PDOException $e){
+            new Log($e);
+            return ['errors' => $e->getCode()];
+        }catch(Exception $e){
+            new Log($e);
+            return ['errors' => $e->getCode()];
+        }
+
+        return $account;
     }
 
     public function delete($data): bool
@@ -103,10 +152,10 @@ class TransferBankRepository implements RepositoryInterface{
         }
     }
 
-    public function getByIdAndUser(int $id, int $userId){
+    public function getByIdAndUser(int $id, int $userId): array | null | TransferBank{
         try{
             $ret = null;
-            $sql = "select * from transfer_bank where user=? and id=? order by description;";
+            $sql = "Select t.*, JSON_OBJECT('id', b.id, 'bankName', b.bankName, 'agency', b.agency, 'accountNumber', b.accountNumber, 'accountNumber', b.accountNumber, 'bankCode', b.bankCode) as bank_account from transfer_bank t inner join bank_accounts b on b.id=t.bank_account where t.user=:user and t.id=? order by t.description;";
             $data = $this->db->select($sql, [$userId, $id]);
 
             if(count($data) > 0){
@@ -115,7 +164,8 @@ class TransferBankRepository implements RepositoryInterface{
             }
             return $ret;
         }catch(PDOException $e){
-            return null;
+            new Log($e);
+            return ['errors' => $e->getCode()];
         }
     }
 }
