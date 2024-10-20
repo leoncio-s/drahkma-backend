@@ -6,7 +6,7 @@ use App\Database\Databases;
 use App\Items\ItemsRepository;
 use App\Items\ItemsService;
 use Bramus\Router\Router;
-use controllers\ItemsController;
+use App\Items\ItemsController;
 use Routes\ApiRoute;
 
 class ItemsRouteApi extends ApiRoute{
@@ -28,6 +28,7 @@ class ItemsRouteApi extends ApiRoute{
             $this->router->get("/", fn()=>$controller->getAll());
             $this->router->post("/", fn()=>$controller->create());
             $this->router->put("/", fn()=>$controller->update());
+            $this->router->delete("/{id}", fn(int $id)=>$controller->delete($id));
             $this->router->get("/inflow", fn()=>$controller->inflow());
             $this->router->get("/outflow", fn()=>$controller->outflow());
             $this->router->get("/amounts", fn()=>$controller->amounts());

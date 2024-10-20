@@ -126,6 +126,9 @@ class UserRepository implements UserRepositoryInterface
         }catch(PDOException $e){
             new Log($e);
             return ['errors'=>$e];
+        }catch(Exception $e){
+            new Log($e);
+            return ['errors'=>$e];
         }
 
     }

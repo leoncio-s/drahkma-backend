@@ -83,7 +83,7 @@ create table if not exists items(
     foreign key (user) references users(id),
     foreign key (category) references categories(id),
     foreign key (card) references cards(id),
-    foreign key (transfer_bank) references transfer_bank(id)
+    foreign key (transfer_bank) references transfer_bank(id) on delete cascade;
 );
 
 create table email_verified(

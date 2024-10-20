@@ -7,7 +7,7 @@ use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\Items\Items;
 use App\Users\User;
-use controllers\Http\Autenticated;
+use App\Utils\Http\Autenticated;
 use DateTime;
 
 class ItemsService implements ServicesInterface{
@@ -36,7 +36,7 @@ class ItemsService implements ServicesInterface{
         return $this->repository->getByUser($idUser);
     }
 
-    public function update(array $data): ?Model
+    public function update(array $data): null | array | Items
     {
         if(isset($data['user'])){
             $validate = Items::validate($data, true);
@@ -51,8 +51,7 @@ class ItemsService implements ServicesInterface{
     {
         if(isset($data['user'])){
             $data['user'] = $data['user'];
-            // return $this->repository->delete($data);
-            return 0;
+            return $this->repository->delete($data);
         }
         return 0;
     }

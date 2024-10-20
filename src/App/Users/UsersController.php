@@ -1,18 +1,18 @@
 <?php
 
-namespace controllers;
+namespace App\Users;
 
 use App\Users\User;
 use App\Users\UserServices;
-use controllers\Http\Autenticated;
-use controllers\Http\Response;
-use controllers\Http\HttpStatus as hS;
-use controllers\Http\HttpStatus;
-use controllers\Http\Request;
+use App\Utils\Http\Autenticated;
+use App\Utils\Http\Response;
+use App\Utils\Http\HttpStatus as hS;
+use App\Utils\Http\HttpStatus;
+use App\Utils\Http\Request;
 use Exception;
 use PDOException;
 
-use function controllers\Http\autenticated;
+use function App\Utils\Http\autenticated;
 
 class UsersController{
 

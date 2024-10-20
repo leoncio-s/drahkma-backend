@@ -2,12 +2,11 @@
 
 namespace Routes\Api;
 
+use App\BankAccounts\BankAccountController;
 use App\Database\Databases;
 use App\BankAccounts\BankAccountsRepository;
 use App\BankAccounts\BankAccountsService;
 use Bramus\Router\Router;
-use controllers\BankAccountController;
-use controllers\Http\Autenticated;
 use Routes\ApiRoute;
 
 class BankAccountsRouteApi extends ApiRoute{

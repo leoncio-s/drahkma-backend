@@ -5,8 +5,8 @@ namespace Routes;
 use App\Database\Databases;
 use App\Logging\Log;
 use Bramus\Router\Router;
-use controllers\Http\HttpStatus;
-use controllers\Http\Response;
+use App\Utils\Http\HttpStatus;
+use App\Utils\Http\Response;
 
 abstract class ApiRoute{
     protected Router $router;

@@ -2,13 +2,11 @@
 
 namespace Routes\Api;
 
+use App\Categories\CategoriesController;
 use App\Database\Databases;
 use App\Categories\CategoriesRepository;
 use App\Categories\CategoriesService;
 use Bramus\Router\Router;
-use controllers\BankAccountController;
-use controllers\CategoriesController;
-use controllers\Http\Autenticated;
 use Routes\ApiRoute;
 
 class CategoriesRouteApi extends ApiRoute{

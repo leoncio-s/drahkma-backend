@@ -1,6 +1,6 @@
 <?php
 
-namespace controllers\Http;
+namespace App\Utils\Http;
 
 enum HttpStatus:int{
     case HTTP_OK = 200;

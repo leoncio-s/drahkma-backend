@@ -1,14 +1,14 @@
 <?php
 
-namespace controllers;
+namespace App\Items;
 
 use App\Items\Items;
 use App\Items\ItemsService;
-use controllers\Http\Autenticated;
-use controllers\Http\HttpStatus;
-use controllers\Http\Request;
-use controllers\Http\Response;
 use App\Logging\Log;
+use App\Utils\Http\Autenticated;
+use App\Utils\Http\HttpStatus;
+use App\Utils\Http\Request;
+use App\Utils\Http\Response;
 use DateTime;
 
 class ItemsController {
@@ -69,6 +69,23 @@ class ItemsController {
         }
     }
 
+    public function delete(int $id){
+        if(Autenticated::autenticated()){
+            $user = Autenticated::getUserAuth();
+            $data = [
+                "user" => $user['id'],
+                "id" => $id
+            ];
+            $ret = $this->service->delete($data);
+            if($ret){
+                return Response::json();
+            }elseif($ret==false){
+                return Response::json(["errors" => "Content not deleted"], HttpStatus::HTTP_BAD_REQUEST);
+            }
+            return Response::json((array) $ret, HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public function inflow(){
         if(Autenticated::autenticated()){
             if(isset($_GET['start_date'], $_GET['finish_date'])){
@@ -91,7 +108,7 @@ class ItemsController {
                 $data = $this->service->getOutflow($start, $finish);
                 return Response::json($data);
             }
-            return Response::json([], HttpStatus::HTTP_BAD_REQUEST);
+            return Response::json(null, HttpStatus::HTTP_BAD_REQUEST);
         }
     }
 

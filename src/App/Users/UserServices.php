@@ -7,7 +7,7 @@ use App\Users\UserRepository;
 use App\Utils\JWTTokenUtils;
 use App\Utils\PasswordUtils;
 use App\Utils\Utils;
-use controllers\Http\HttpStatus;
+use App\Utils\Http\HttpStatus;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -75,15 +75,20 @@ class UserServices implements ServicesInterface{
             return ['error' => 'This e-mail has not verified', 'errorCode' => HttpStatus::HTTP_BAD_REQUEST];
         }elseif($user->getEmailVerifiedAt() != null && !$user->getActived()){
             return ['error' => 'User not allowed', 'errorCode' => HttpStatus::HTTP_FORBIDDEN];
+        }elseif($user instanceof User){
+            if(PasswordUtils::compare($password, $user->getPassword())){
+                // $user->tokens()->delete();
+                // $token = $user->createToken($email, ['user' => $user])->plainTextToken;
+                $token = JWTTokenUtils::generate($user);
+                return ["token"=>$token, "user" => $user->toArray()];
+            } 
+        }elseif(isset($user['errors'])){
+            $user['errorCode'] = HttpStatus::HTTP_INTERNAL_SERVER_ERROR;
+            return $user;
         }
         
-        if(PasswordUtils::compare($password, $user->getPassword())){
-            // $user->tokens()->delete();
-            // $token = $user->createToken($email, ['user' => $user])->plainTextToken;
-            $token = JWTTokenUtils::generate($user);
-            return ["token"=>$token, "user" => $user->toArray()];
-        } 
-        return ["error"=>"Incorrect Email or Password", "errorCode" => HttpStatus::HTTP_BAD_REQUEST];
+
+        return ["errors"=>"Incorrect Email or Password", "errorCode" => HttpStatus::HTTP_BAD_REQUEST];
     }
 
     public function generateEmailVerification(User $user){

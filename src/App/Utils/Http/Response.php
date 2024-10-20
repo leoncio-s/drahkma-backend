@@ -1,8 +1,6 @@
 <?php
 
-namespace controllers\Http;
-
-use function PHPSTORM_META\type;
+namespace App\Utils\Http;
 
 class Response{
     public static function json(?array $data = [], HttpStatus|int $http_code_status=HttpStatus::HTTP_OK) : void{

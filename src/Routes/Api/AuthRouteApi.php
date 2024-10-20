@@ -6,7 +6,7 @@ use App\Database\Databases;
 use App\Users\UserServices;
 use App\Users\UserRepository;
 use Bramus\Router\Router;
-use controllers\AuthController;
+use App\Auth\AuthController;
 use Routes\ApiRoute;
 
 class AuthRouteApi extends ApiRoute{

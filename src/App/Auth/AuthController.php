@@ -1,11 +1,11 @@
 <?php
 
-namespace controllers;
+namespace App\Auth;
 
 use App\Users\UserServices;
-use controllers\Http\HttpStatus;
-use controllers\Http\Request;
-use controllers\Http\Response;
+use App\Utils\Http\HttpStatus;
+use App\Utils\Http\Request;
+use App\Utils\Http\Response;
 use Exception;
 
 class AuthController{
@@ -21,7 +21,7 @@ class AuthController{
             $req = Request::getAll();
 
             $ret = $this->service->login($req['email'], $req['password']);
-            if(isset($ret['error'])){
+            if(isset($ret['errors'])){
                 Response::json($ret, $ret['errorCode']);
             }else{
                 Response::json($ret, HttpStatus::HTTP_OK);

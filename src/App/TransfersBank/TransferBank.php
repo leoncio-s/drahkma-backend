@@ -100,7 +100,7 @@ class TransferBank implements Model
 
     public static function validate(array $data, bool $update=false): array
     {
-        $type = (isset($data['type'])) ? TransferBankEnum::tryFrom($data['value']) : null;
+        $type = (isset($data['type'])) ? TransferBankEnum::tryFrom($data['type']) : null;
         $description = (isset($data['description'])) ? $data['description'] : null;
         $user = (isset($data['user']))? $data['user'] : null;
         $bank_account = (isset($data['bank_account']) ? $data['bank_account'] : null);

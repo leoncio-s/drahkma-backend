@@ -2,7 +2,6 @@
 
 namespace App\Items;
 
-use App\BankAccounts\BankAccountsRepository;
 use App\Cards\CardsRepository;
 use App\Categories\CategoriesRepository;
 use App\Database\MySqlDatabaseImpl;
@@ -11,6 +10,7 @@ use App\Interfaces\RepositoryInterface;
 use App\Items\Items;
 use App\Logging\Log;
 use App\Logging\LogTypeEnum;
+use App\TransfersBank\TransferBank;
 use App\TransfersBank\TransferBankRepository;
 use Exception;
 use PDOException;
@@ -82,7 +82,7 @@ class ItemsRepository implements RepositoryInterface{
         return $item;
     }
 
-    public function update(array $data): ?Model
+    public function update(array $data): array | null | Items
     {
         $transfer_bank = null;
         $item = null;
@@ -100,9 +100,14 @@ class ItemsRepository implements RepositoryInterface{
         try{
             if($data['transfer_bank'] != null){
                 $data['transfer_bank']['user'] = $data['user'];
-                $transfer_bank= $this->trfBRepo->update($data["transfer_bank"]);
+                if($data['transfer_bank']['id'] != null) $transfer_bank= $this->trfBRepo->update($data["transfer_bank"]);
+                else $transfer_bank= $this->trfBRepo->save($data["transfer_bank"]);
 
-                $fields['transfer_bank'] = $transfer_bank->getId();
+                if($transfer_bank instanceof TransferBank){
+                    $fields['transfer_bank'] = $transfer_bank->getId();
+                }else{
+                    return $transfer_bank;
+                }
             }
             if(isset($data['card'])){
                 $card = $this->cardRepo->getByIdAndUser($data['card'], $data['user']);
@@ -117,39 +122,83 @@ class ItemsRepository implements RepositoryInterface{
             $dbConn = $this->db->getDBConn();
             $dbConn->beginTransaction();
             try{
-                $sql = "UPDATE items SET description=:description, value=:value, date=:date, category=:category, card=:card WHERE user=:user and id=:id;";
+
+                $sql = "UPDATE items SET description=:description, value=:value, date=:date, category=:category, card=:card, transfer_bank=:transfer_bank WHERE user=:user and id=:id;";
                 $prepare = $dbConn->prepare($sql);
                 $prepare->execute($fields);
 
                 $dbConn->commit();
 
-                if($prepare->rowCount() > 0){
-                    return $this->getByIdAndUser($data['id'], $data['user']);
-                }else{
-                    return null;
-                }
+                $item = $this->getByIdAndUser($data['id'], $data['user']);
 
             }catch(PDOException $e){
                 $dbConn->rollBack();
-                throw $e;
+                new Log($e, LogTypeEnum::ERROR);
+                return ['errors' => $e->getCode()];
+            }catch(Exception $e){
+                $dbConn->rollBack();
+                new Log($e, LogTypeEnum::ERROR);
+                return ['errors' => $e->getCode()];
             }
             
-            return null;
+            return $item;
         }catch(PDOException $e){
             // throw $e;
             new Log($e, LogTypeEnum::ERROR);
-            return ['error' => $e->getCode()];
+            return ['errors' => $e->getCode()];
         }catch(Exception $e){
             new Log($e, LogTypeEnum::ERROR);
-            return ['error' => $e->getCode()];
+            return ['errors' => $e->getCode()];
         }
 
         return $item;
     }
 
-    public function delete($data): bool
+    public function delete($data): bool | array
     {
-        return false;
+        try{
+            if(isset($data['id']) && isset($data['user'])){
+                $item = $this->getByIdAndUser($data['id'], $data['user']);
+                if($item instanceof Items){
+                    if($item->getTransferbank() != null){
+                        return $this->trfBRepo->delete($item->getTransferbank()->getId());
+                    }
+                    $dbCon = $this->db->getDBConn();
+                    $dbCon->beginTransaction();
+                    try{
+                        $sql = "DELETE FROM items WHERE id=:id and user=:user";
+                        $prepare = $dbCon->prepare($sql);
+                        $prepare->execute($data);
+
+                        if($prepare->rowCount() > 0){
+                            $dbCon->commit();
+                            new Log($prepare);
+                            return true;
+                        }else{
+                            return false;
+                        }
+
+                    }catch(PDOException $e){
+                        $dbCon->rollBack();
+                        new Log($e, LogTypeEnum::ERROR);
+                        return ['errors' => $e->getCode()];
+                    }catch(Exception $e){
+                        $dbCon->rollBack();
+                        new Log($e, LogTypeEnum::ERROR);
+                        return ['errors' => $e->getCode()];
+                    }
+                }
+            }
+
+            return ['errors' => "Invalid fields"];
+
+        }catch(PDOException $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return ['errors' => $e->getCode()];
+        }catch(Exception $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return ['errors' => $e->getCode()];
+        }
     }
 
     public function get(int $id): ?Model
@@ -307,7 +356,7 @@ order by date desc;";
         }
     }
 
-    public function getOutflow(string $start_date, string $finish_date, int $userId){
+    public function getOutflow(string $start_date, string $finish_date, int $userId):array{
         try{
             $sql = "select i.*, JSON_OBJECT('id', c.id, 'description', c.description) as category,
 CASE WHEN i.card is not null then
@@ -339,16 +388,17 @@ order by date desc;";
             if(count($prep, COUNT_RECURSIVE) > 0 || $prep != null){
                 foreach($prep as $data){
                     $item = new Items();
-                    array_push($toRet, $item->toObject($data));
+                    $item->toObject($data);
+                    array_push($toRet, $item->toArray());
                 }
             }
-
+            
             return $toRet;
             
         }catch(PDOException $e){
-            return null;
+            return [];
         }catch(Exception $e){
-            return null;
+            return [];
         }
     }
 

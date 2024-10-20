@@ -1,18 +1,18 @@
 <?php
 
-namespace controllers;
+namespace App\Categories;
 
-use App\BankAccounts\BankAccounts;
-use App\BankAccounts\BankAccountsService;
-use controllers\Http\Autenticated;
-use controllers\Http\HttpStatus;
-use controllers\Http\Request;
-use controllers\Http\Response;
+use App\Categories\Categories;
+use App\Categories\CategoriesService;
+use App\Utils\Http\Autenticated;
+use App\Utils\Http\HttpStatus;
+use App\Utils\Http\Request;
+use App\Utils\Http\Response;
 
-class BankAccountController {
+class CategoriesController {
 
-    private BankAccountsService $service;
-    public function __construct(BankAccountsService $service) {
+    private CategoriesService $service;
+    public function __construct(CategoriesService $service) {
         $this->service = $service;
     }
 
@@ -21,7 +21,7 @@ class BankAccountController {
             $data = Request::getAll();
             $data['user'] = Autenticated::getUserAuth()['id'];
             $ret = $this->service->create($data);
-            if($ret instanceof BankAccounts){
+            if($ret instanceof Categories){
                 return Response::json($ret->toArray(), HttpStatus::HTTP_CREATED);
             }else{
                 return Response::json($ret, HttpStatus::HTTP_BAD_REQUEST);
@@ -50,14 +50,14 @@ class BankAccountController {
     public function update(){
         if(Autenticated::autenticated()){
             $data = Request::getAll();
-            if(isset($data['id'])){
+            if(isset($data['id']) && isset($data['description'])){
                 $data['user'] = Autenticated::getUserAuth()['id'];
 
                 $ret = $this->service->update($data);
-                if($ret instanceof BankAccounts){
-                    return Response::json($ret->toArray());
+                if(isset($ret['error'])){
+                    return Response::json($ret, HttpStatus::HTTP_BAD_REQUEST);
                 }
-                return Response::json($ret, HttpStatus::HTTP_BAD_REQUEST);
+                return Response::json($ret->toArray());
             }else{
                 return Response::json([], HttpStatus::HTTP_BAD_REQUEST);
             }

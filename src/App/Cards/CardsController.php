@@ -1,14 +1,13 @@
 <?php
 
-namespace controllers;
+namespace App\Cards;
 
 use App\Cards\Cards;
 use App\Cards\CardsService;
-use App\Users\User;
-use controllers\Http\Autenticated;
-use controllers\Http\HttpStatus;
-use controllers\Http\Request;
-use controllers\Http\Response;
+use App\Utils\Http\Autenticated;
+use App\Utils\Http\HttpStatus;
+use App\Utils\Http\Request;
+use App\Utils\Http\Response;
 
 class CardsController {
 

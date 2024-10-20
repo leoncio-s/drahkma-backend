@@ -85,7 +85,7 @@ abstract class Databases{
             $this->db->commit();
         
             return $ret->fetchAll();
-        }catch(Exception $e){
+        }catch(PDOException $e){
             $this->db->rollBack();
             throw $e;
         }

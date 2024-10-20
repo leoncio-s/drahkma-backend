@@ -6,8 +6,8 @@ namespace Routes\Api;
 use App\Database\Databases;
 use App\Users\UserServices;
 use App\Users\UserRepository;
+use App\Users\UsersController;
 use Bramus\Router\Router;
-use controllers\UsersController;
 use Routes\ApiRoute;
 
 class UsersRouteApi extends ApiRoute{

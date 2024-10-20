@@ -7,6 +7,7 @@ use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
 use App\Interfaces\RepositoryInterface;
 use App\Logging\Log;
+use App\Logging\LogTypeEnum;
 use App\TransfersBank\TransferBank;
 use Exception;
 use PDOException;
@@ -75,23 +76,15 @@ class TransferBankRepository implements RepositoryInterface{
             $dbCon->beginTransaction();
             try{
 
-                $sql = <<<EOD
-UPDATE transfer_bank
-SET type=:type, 
-bank_account=:bank_account,
-description=:description
-WHERE id=:id and user=:user
-EOD;        
-            $prepare = $dbCon->prepare($sql);
-            $prepare->execute($fields);
+                $sql = "UPDATE transfer_bank SET type=:type, bank_account=:bank_account, description=:description WHERE id=:id and user=:user";        
+                $prepare = $dbCon->prepare($sql);
+                $prepare->execute($fields);
 
-            $dbCon->commit();
-            
-            if($prepare->rowCount() >= 1){
+                new Log("fectch item :" . $prepare->fetch());
+
+                $dbCon->commit();
+
                 return $this->getByIdAndUser($data['id'], $data['user']);
-            }else{
-                return ['errors' => "Problem to update item"];
-            }
             }catch(Exception $e){
                 $dbCon->rollBack();
                 throw $e;
@@ -108,9 +101,29 @@ EOD;
         return $account;
     }
 
-    public function delete($data): bool
+    public function delete($id): array | bool
     {
-        return false;
+        $dbCon = $this->db->getDBConn();
+        $dbCon->beginTransaction();
+        try{
+            $sql = "DELETE FROM transfer_bank WHERE id=?";
+            $prepare = $dbCon->prepare($sql);
+            $prepare->execute([$id]);
+
+            if($prepare->rowCount() > 0) {
+                $dbCon->commit();
+                return true;
+            }else{
+                return false;
+            }
+
+        }catch(PDOException $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return ['errors' => $e->getCode()];
+        }catch(Exception $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return ['errors' => $e->getMessage()];
+        }
     }
 
     public function get(int $id): ?TransferBank
@@ -155,7 +168,7 @@ EOD;
     public function getByIdAndUser(int $id, int $userId): array | null | TransferBank{
         try{
             $ret = null;
-            $sql = "Select t.*, JSON_OBJECT('id', b.id, 'bankName', b.bankName, 'agency', b.agency, 'accountNumber', b.accountNumber, 'accountNumber', b.accountNumber, 'bankCode', b.bankCode) as bank_account from transfer_bank t inner join bank_accounts b on b.id=t.bank_account where t.user=:user and t.id=? order by t.description;";
+            $sql = "Select t.*, JSON_OBJECT('id', b.id, 'bankName', b.bankName, 'agency', b.agency, 'accountNumber', b.accountNumber, 'accountNumber', b.accountNumber, 'bankCode', b.bankCode) as bank_account from transfer_bank t inner join bank_accounts b on b.id=t.bank_account where t.user=? and t.id=? order by t.description;";
             $data = $this->db->select($sql, [$userId, $id]);
 
             if(count($data) > 0){

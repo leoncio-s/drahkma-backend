@@ -194,7 +194,7 @@ class Items implements Model
         ];
 
         if($description == null || $description == "") array_push($errors['description'], "Field is required");
-        elseif(!(strlen($description) >= 5 && strlen($description) <= 100)) array_push($errors['description'], "Min. Length is 5 and max. is 100d");
+        elseif(!(strlen($description) >= 5 && strlen($description) <= 100)) array_push($errors['description'], "Min. Length is 5 and max. is 100");
         elseif(!StringValidator::descrValidate($description)) array_push($errors['description'], "Invalid value for field");
 
         if($date == null) array_push($errors['date'], "Field is required");

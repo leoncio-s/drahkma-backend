@@ -1,6 +1,6 @@
 <?php
 
-namespace controllers\Http;
+namespace App\Utils\Http;
 
 use App\Logging\Log;
 use App\Logging\LogTypeEnum;

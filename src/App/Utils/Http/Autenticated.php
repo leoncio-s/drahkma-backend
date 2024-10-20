@@ -1,8 +1,7 @@
 <?php
 
-namespace controllers\Http;
+namespace App\Utils\Http;
 
-use App\Users\User;
 use App\Utils\JWTTokenUtils;
 
 class Autenticated{

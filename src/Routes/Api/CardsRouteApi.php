@@ -4,7 +4,7 @@ namespace Routes\Api;
 
 use App\Cards\CardsRepository;
 use App\Cards\CardsService;
-use controllers\CardsController;
+use App\Cards\CardsController;
 use Routes\ApiRoute;
 
 class CardsRouteApi extends ApiRoute{
