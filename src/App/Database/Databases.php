@@ -80,7 +80,6 @@ abstract class Databases{
         try{
             $ret = $this->db->prepare($sql);
 
-            // var_dump($ret);
             $ret->execute($parameters);
             $this->db->commit();
         

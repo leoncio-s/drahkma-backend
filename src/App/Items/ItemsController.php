@@ -118,6 +118,7 @@ class ItemsController {
 
                 $start = DateTime::createFromFormat('Ymd', $_GET['start_date']);
                 $finish = DateTime::createFromFormat('Ymd', $_GET['finish_date']);
+                $group = isset($_GET['group']) ? ItemsGroupEnum::tryFrom($_GET["group"]) : null;
 
                 $data = $this->service->getAmounts($start, $finish);
 
