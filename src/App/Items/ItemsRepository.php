@@ -403,17 +403,24 @@ order by date desc;";
     }
 
     public function getAmounts(string $start_date, string $finish_date, int $userId) : array{
-        $data['out'] = $this->getOutAmounts($start_date, $finish_date, $userId);
-        $data['in'] = $this->getInAmounts($start_date, $finish_date, $userId);
+        $data['outflow'] = $this->getOutAmounts($start_date, $finish_date, $userId);
+        $data['inflow'] = $this->getInAmounts($start_date, $finish_date, $userId);
         $data['amount'] = $data['in'] - $data['out']; 
-        $data['ammountInCategory'] = $this->getInAmountsByCategory($start_date, $finish_date, $userId);
-        $data['ammountOutCategory'] = $this->getOutAmountsByCategory($start_date, $finish_date, $userId);
+        $data['amountInflowCategory'] = $this->getInAmountsByCategory($start_date, $finish_date, $userId);
+        $data['amountOutflowCategory'] = $this->getOutAmountsByCategory($start_date, $finish_date, $userId);
 
-        $data['ammountInCard'] = $this->getInAmountsByCard($start_date, $finish_date, $userId);
-        $data['ammountOutCard'] = $this->getOutAmountsByCard($start_date, $finish_date, $userId);
+        $data['amountInflowCard'] = $this->getInAmountsByCard($start_date, $finish_date, $userId);
+        $data['amountOutflowCard'] = $this->getOutAmountsByCard($start_date, $finish_date, $userId);
 
-        $data['inAmmounttransferBank'] = $this->getInAmountsByTransferBankAccounts($start_date, $finish_date, $userId);
-        $data['outAmmounttransferBank'] = $this->getOutAmountsByTransferBankAccounts($start_date, $finish_date, $userId);
+        $data['amountInflowTransferBank'] = $this->getInAmountsByTransferBankAccounts($start_date, $finish_date, $userId);
+        $data['amountOutflowTransferBank'] = $this->getOutAmountsByTransferBankAccounts($start_date, $finish_date, $userId);
+
+        $data['totalAmountInflowTransferBank'] = $this->getInTotalAmmountByTransferBank($start_date, $finish_date, $userId);
+        $data['totalAmountOutflowTransferBank'] = $this->getOutTotalAmmountByTransferBank($start_date, $finish_date, $userId);
+
+        $data['totalAmountInflowCards'] = $this->getInTotalAmountsByCard($start_date, $finish_date, $userId);
+        $data['totalAmountOutflowCards'] = $this->getOutTotalAmountsByCard($start_date, $finish_date, $userId);
+
         return $data;
     }
 
@@ -744,6 +751,168 @@ order by date desc;";
             }
 
             return  (array) $data;
+            
+        }catch(PDOException $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return null;
+        }catch(Exception $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return null;
+        }
+    }
+
+    private function getInTotalAmmountByTransferBank(string $start_date, string $finish_date, int $userId){
+
+        try{
+            $conn = $this->db->getDBConn();
+
+            $sql = "SELECT COALESCE(truncate(sum(i.value),2), 0.00) as total FROM items i " . 
+            "where i.date between :start_date and :finish_date and i.user=:user_id and i.expense=false " . 
+            "and (not i.transfer_bank is null) " .
+            "";
+            // $sql = $sql . "SELECT sum(value) as total, 'inflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=false union all ";
+            // $sql = $sql . "SELECT (i.total - o.total) as total, 'amount' as type FROM (SELECT sum(value) as total, 'outflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=true) o, ";
+            // $sql = $sql . "(SELECT sum(value) as total, 'inflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=false) i";
+
+            $prep = $conn->prepare($sql);
+
+            $param = [
+                "start_date" => $start_date,
+                "finish_date" => $finish_date,
+                "user_id" => $userId
+            ];
+
+            $prep->execute($param);
+
+            // var_dump($prep->execute($param));
+
+            // $prep = $this->db->select("SELECT truncate(sum(value), '2') as total FROM items WHERE user=:user", ['user' => $userId]);
+
+            $data = $prep->fetchObject()->total;
+            
+            // var_dump($data);
+            return  (float) $data;
+            
+        }catch(PDOException $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return null;
+        }catch(Exception $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return null;
+        }
+    }
+
+    private function getOutTotalAmmountByTransferBank(string $start_date, string $finish_date, int $userId){
+
+        try{
+            $conn = $this->db->getDBConn();
+
+            $sql = "SELECT COALESCE(truncate(sum(i.value),2), 0.00) as total FROM items i " .  
+            "where i.date between :start_date and :finish_date and i.user=:user_id and i.expense=true " . 
+            "and (not i.transfer_bank is null) " .
+            "";
+            // $sql = $sql . "SELECT sum(value) as total, 'inflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=false union all ";
+            // $sql = $sql . "SELECT (i.total - o.total) as total, 'amount' as type FROM (SELECT sum(value) as total, 'outflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=true) o, ";
+            // $sql = $sql . "(SELECT sum(value) as total, 'inflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=false) i";
+
+            $prep = $conn->prepare($sql);
+
+            $param = [
+                "start_date" => $start_date,
+                "finish_date" => $finish_date,
+                "user_id" => $userId
+            ];
+
+            $prep->execute($param);
+
+            // var_dump($prep->execute($param));
+
+            // $prep = $this->db->select("SELECT truncate(sum(value), '2') as total FROM items WHERE user=:user", ['user' => $userId]);
+
+            $data = $prep->fetchObject()->total;
+            
+            // var_dump($data);
+            return  (float) $data;
+            
+        }catch(PDOException $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return null;
+        }catch(Exception $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return null;
+        }
+    }
+
+    private function getInTotalAmountsByCard(string $start_date, string $finish_date, int $userId){
+
+        try{
+            $conn = $this->db->getDBConn();
+
+            $sql = "SELECT COALESCE(truncate(sum(i.value),2), 0.00) as total FROM items i " . 
+            "where i.date between :start_date and :finish_date and i.user=:user_id and i.expense=false and not i.card is null " . 
+            "";
+            // $sql = $sql . "SELECT sum(value) as total, 'inflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=false union all ";
+            // $sql = $sql . "SELECT (i.total - o.total) as total, 'amount' as type FROM (SELECT sum(value) as total, 'outflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=true) o, ";
+            // $sql = $sql . "(SELECT sum(value) as total, 'inflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=false) i";
+
+            $prep = $conn->prepare($sql);
+
+            $param = [
+                "start_date" => $start_date,
+                "finish_date" => $finish_date,
+                "user_id" => $userId
+            ];
+
+            $prep->execute($param);
+
+            // var_dump($prep->execute($param));
+
+            // $prep = $this->db->select("SELECT truncate(sum(value), '2') as total FROM items WHERE user=:user", ['user' => $userId]);
+
+            $data = $prep->fetchObject()->total;
+            
+            // var_dump($data);
+            return  (float) $data;
+            
+        }catch(PDOException $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return null;
+        }catch(Exception $e){
+            new Log($e, LogTypeEnum::ERROR);
+            return null;
+        }
+    }
+
+    private function getOutTotalAmountsByCard(string $start_date, string $finish_date, int $userId){
+
+        try{
+            $conn = $this->db->getDBConn();
+
+            $sql = "SELECT COALESCE(truncate(sum(i.value),2), 0.00) as total FROM items i " . 
+            "where i.date between :start_date and :finish_date and i.user=:user_id and i.expense=true and not i.card is null " . 
+            "";
+            // $sql = $sql . "SELECT sum(value) as total, 'inflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=false union all ";
+            // $sql = $sql . "SELECT (i.total - o.total) as total, 'amount' as type FROM (SELECT sum(value) as total, 'outflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=true) o, ";
+            // $sql = $sql . "(SELECT sum(value) as total, 'inflow' as type FROM items where date between :start_date and :finish_date and user=:user_id and expense=false) i";
+
+            $prep = $conn->prepare($sql);
+
+            $param = [
+                "start_date" => $start_date,
+                "finish_date" => $finish_date,
+                "user_id" => $userId
+            ];
+
+            $prep->execute($param);
+
+            // var_dump($prep->execute($param));
+
+            // $prep = $this->db->select("SELECT truncate(sum(value), '2') as total FROM items WHERE user=:user", ['user' => $userId]);
+
+            $data = $prep->fetchObject()->total;
+            
+            // var_dump($data);
+            return  (float) $data;
             
         }catch(PDOException $e){
             new Log($e, LogTypeEnum::ERROR);
