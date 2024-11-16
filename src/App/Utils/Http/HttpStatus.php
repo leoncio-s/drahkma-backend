@@ -2,7 +2,8 @@
 
 namespace App\Utils\Http;
 
-enum HttpStatus:int{
+enum HttpStatus: int
+{
     case HTTP_OK = 200;
     case HTTP_CREATED = 201;
     case HTTP_NO_CONTENT = 204;

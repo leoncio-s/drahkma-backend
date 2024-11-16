@@ -5,7 +5,7 @@
 
 use App\Database\MySqlDatabaseImpl;
 
-define('INI_FILE', './lfinanca.ini');
+define('INI_FILE', __DIR__. '/lfinanca.ini');
 
 $ini_file = parse_ini_file(INI_FILE, true);
 

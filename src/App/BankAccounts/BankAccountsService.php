@@ -9,7 +9,8 @@ use App\BankAccounts\BankAccounts;
 use App\Logging\Log;
 use App\Logging\LogTypeEnum;
 
-class BankAccountsService implements ServicesInterface{
+class BankAccountsService implements ServicesInterface
+{
 
     private BankAccountsRepository $repository;
     public function __construct(BankAccountsRepository $repository)
@@ -17,20 +18,19 @@ class BankAccountsService implements ServicesInterface{
         $this->repository = $repository;
     }
 
-    public function create(array $data): Model | array | null
+    public function create(array $data) : Model | array | null
     {
 
         // new Log($data, LogTypeEnum::DEBUG);
-        if(isset($data['user'])){
+        if (isset($data['user'])) {
             $validation = BankAccounts::validate($data);
 
             // new Log($validation, LogTypeEnum::DEBUG);
-            if(isset($validation['errors'])){
+            if (isset($validation['errors'])) {
                 return $validation;
             }
             $data = $this->repository->save($data);
             return $data;
-            
         }
     }
 
@@ -39,28 +39,27 @@ class BankAccountsService implements ServicesInterface{
         return $this->repository->getByUser($idUser);
     }
 
-    public function update(array $data): Model | array | null
+    public function update(array $data) : Model | array | null
     {
 
-        
 
-        if(isset($data['user'])){
-            $cat = BankAccounts::validate($data, update:true);
+
+        if (isset($data['user'])) {
+            $cat = BankAccounts::validate($data, true);
             // new Log($cat, LogTypeEnum::DEBUG);
-            if(isset($cat['errors'])){
+            if (isset($cat['errors'])) {
                 return $cat;
-            }else{
+            } else {
                 $ret = $this->repository->update($data);
                 return $ret;
             }
-            
         }
         return null;
     }
 
-    public function delete(array $data): bool | int | null | array
+    public function delete(array $data) : bool | int | null | array
     {
-        if(isset($data['user']) && isset($data['id'])){
+        if (isset($data['user']) && isset($data['id'])) {
             return $this->repository->delete($data);
         }
         return 0;

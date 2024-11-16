@@ -4,13 +4,11 @@ namespace App\Users;
 
 use App\Database\MySqlDatabaseImpl;
 use App\Logging\Log;
+use App\Logging\LogTypeEnum;
 use App\Users\User;
 use DateTime;
 use Exception;
-use PDO;
 use PDOException;
-
-use function PHPSTORM_META\type;
 
 class UserRepository implements UserRepositoryInterface
 {
@@ -61,6 +59,7 @@ class UserRepository implements UserRepositoryInterface
             // var_dump($user->getId());
             return $user;
         } catch (PDOException $e) {
+            new Log($e, LogTypeEnum::ERROR);
             if ($e->errorInfo[1] == 1062) {
                 return ['error' => "Duplicate value for e-mail field"];
             } else {
@@ -124,10 +123,10 @@ class UserRepository implements UserRepositoryInterface
     
             return $user;
         }catch(PDOException $e){
-            new Log($e);
+            new Log($e, LogTypeEnum::ERROR);
             return ['errors'=>$e];
         }catch(Exception $e){
-            new Log($e);
+            new Log($e, LogTypeEnum::ERROR);
             return ['errors'=>$e];
         }
 
@@ -136,7 +135,7 @@ class UserRepository implements UserRepositoryInterface
     public function updatePassword(int $id, string $password): User
     {
         $sql = "UPDATE USERS SET password=?, updated_at=now() where id=?;";
-        $uAt = self::get($id);
+        $uAt =  self::get($id);
         $uAt->setPassword($password);
         $uAt->setUpdatedAt((string)(new DateTime()));
 
@@ -159,6 +158,7 @@ class UserRepository implements UserRepositoryInterface
             return true;
         } catch (PDOException $e) {
             $db->rollBack();
+            new Log($e, LogTypeEnum::ERROR);
             throw $e;
         }
 
@@ -193,6 +193,7 @@ class UserRepository implements UserRepositoryInterface
             }
         } catch (PDOException $e) {
             // echo $e;
+            new Log($e, LogTypeEnum::ERROR);
             return false;
         }
     }

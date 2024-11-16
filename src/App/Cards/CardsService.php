@@ -6,7 +6,8 @@ use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\Cards\Cards;
 
-class CardsService implements ServicesInterface{
+class CardsService implements ServicesInterface
+{
 
     private CardsRepository $repository;
     public function __construct(CardsRepository $repository)
@@ -14,11 +15,11 @@ class CardsService implements ServicesInterface{
         $this->repository = $repository;
     }
 
-    public function create(array $data): Model | array | null
+    public function create(array $data) : Model | array | null
     {
-        if(isset($data['user'])){
+        if (isset($data['user'])) {
             $validation = Cards::validate($data);
-            if(isset($validation['errors'])){
+            if (isset($validation['errors'])) {
                 return $validation;
             }
             $data = $this->repository->save($validation['data']);
@@ -31,20 +32,20 @@ class CardsService implements ServicesInterface{
         return $this->repository->getByUser($idUser);
     }
 
-    public function update(array $data): array | Model | null
+    public function update(array $data) : array | Model | null
     {
-        if(isset($data['user'])){
+        if (isset($data['user'])) {
             $ret = Cards::validate($data);
-            if(!isset($ret["errors"])){
+            if (!isset($ret["errors"])) {
                 return $this->repository->update($data);
             }
             return $ret;
         }
     }
 
-    public function delete(array $data): bool | int | null
+    public function delete(array $data) : bool | int | null
     {
-        if(isset($data['user'])){
+        if (isset($data['user'])) {
             $data['user'] = $data['user'];
             return $this->repository->delete($data);
             // return 0;

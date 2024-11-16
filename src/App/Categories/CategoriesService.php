@@ -7,7 +7,8 @@ use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\Categories\Categories;
 
-class CategoriesService implements ServicesInterface{
+class CategoriesService implements ServicesInterface
+{
 
     private CategoriesRepository $repository;
     public function __construct(CategoriesRepository $repository)
@@ -15,42 +16,40 @@ class CategoriesService implements ServicesInterface{
         $this->repository = $repository;
     }
 
-    public function create(array $data): Model | array | null
+    public function create(array $data) : Model | array | null
     {
-        if(isset($data['user'])){
+        if (isset($data['user'])) {
             $validation = Categories::validate($data);
-            if(isset($validation['errors'])){
+            if (isset($validation['errors'])) {
                 return $validation;
             }
             $data = $this->repository->save($data);
             return $data;
-            
         }
     }
 
-    public function read(int $idUser) : ?array
+    public function read(int $idUser): ?array
     {
         return $this->repository->getByUser($idUser);
     }
 
-    public function update(array $data): Model | array | null
+    public function update(array $data) : Model | array | null
     {
-        if(isset($data['user'])){
+        if (isset($data['user'])) {
             // $data['user'] = $data['user'];
-            $cat = Categories::validate($data, update:true);
-            if(isset($cat['errors'])){
+            $cat = Categories::validate($data, true);
+            if (isset($cat['errors'])) {
                 return $cat;
-            }else{
+            } else {
                 $ret = $this->repository->update($cat['data']);
                 return $ret;
             }
-            
         }
     }
 
-    public function delete(array $data): bool | int | null | array
+    public function delete(array $data) : bool | int | null | array
     {
-        if(isset($data['user']) && isset($data['id'])){
+        if (isset($data['user']) && isset($data['id'])) {
             return $this->repository->delete($data);
         }
         return 0;

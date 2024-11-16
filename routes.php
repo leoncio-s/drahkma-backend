@@ -8,6 +8,7 @@ use Routes\Api\CardsRouteApi;
 use Routes\Api\CategoriesRouteApi;
 use Routes\Api\ItemsRouteApi;
 use Routes\Api\UsersRouteApi;
+use Routes\Web\FrontEndRoute;
 
 $api = API_ROUTE;
 
@@ -44,5 +45,8 @@ $categoriesRouter->route();
 
 $itemsRouter = new ItemsRouteApi($DB_CONNECTION, $router);
 $itemsRouter->route();
+
+$front = new FrontEndRoute($router);
+$front->route();
 
 $router->run();
