@@ -6,8 +6,6 @@ use App\BankAccounts\BankAccountsRepository;
 use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\BankAccounts\BankAccounts;
-use App\Logging\Log;
-use App\Logging\LogTypeEnum;
 
 class BankAccountsService implements ServicesInterface
 {
