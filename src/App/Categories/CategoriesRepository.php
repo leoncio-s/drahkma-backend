@@ -19,7 +19,7 @@ class CategoriesRepository implements RepositoryInterface
         $this->db = $db;
     }
 
-    public function save(array $data) //: array | null |Model
+    public function save(array $data) : array | null |Model
     {
         $account = null;
 
@@ -60,7 +60,7 @@ class CategoriesRepository implements RepositoryInterface
         return $account;
     }
 
-    public function update(array $data) //: Model | array | null
+    public function update(array $data) : Model | array | null
     {
 
 
@@ -119,7 +119,7 @@ class CategoriesRepository implements RepositoryInterface
         return $account;
     }
 
-    public function delete($data) //: bool | array
+    public function delete($data) : bool | array
     {
 
         $it = "SELECT count(*) as count FROM items where category=:id and user=:user";
@@ -156,7 +156,7 @@ class CategoriesRepository implements RepositoryInterface
         }
     }
 
-    public function get(int $id)//: ?Model
+    public function get(int $id) : ?Model
     {
         try {
             $sql = "Select * from categories where id=?;";
