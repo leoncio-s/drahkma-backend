@@ -6,4 +6,4 @@ src/front_lfinanca/
 *.log
 *.ini
 
-public/frontend/.*
+public/frontend/
