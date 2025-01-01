@@ -48,8 +48,7 @@ class MySqlDatabaseImpl extends Databases{
             
             return $db;
         }catch(PDOException $e){
-            // echo $e->getMessage();
-            return null;
+            throw $e;
         }
 
         return null;
@@ -62,20 +61,20 @@ class MySqlDatabaseImpl extends Databases{
             foreach($files as $file){
                 if ($file == '.' or $file=='..') continue;
                 else if(pathinfo($file)['extension'] == "sql"){
-                    $this->db->beginTransaction();
+                    $conn = $this->db->beginTransaction();
                     try{
                         $filename = $directory . '/' . $file;
                         $open = fopen($filename, 'r') or die("error to open file " . $file);
                         $read = fread($open, filesize($filename));
                     
                         $this->db->exec($read);
-                        // $query->exec($read);
-                        // $query->execute();
                         unlink($filename);
                         $this->db->commit();
                     }catch(Exception $e){
-                        $this->db->rollBack();
-                        // echo($e);
+                        // $this->db->rollBack();
+                        if($conn){
+                            $this->db->rollBack();
+                        }
                         throw $e;
                     }finally{
                         fclose($open);

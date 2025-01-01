@@ -2,32 +2,31 @@
 
 namespace App\Users;
 
+use App\Interfaces\RepositoryInterface;
 use App\Interfaces\ServicesInterface;
 use App\Users\UserRepository;
-use App\Utils\JWTTokenUtils;
-use App\Utils\PasswordUtils;
-use App\Utils\Utils;
-use App\Utils\Http\HttpStatus;
+use App\Utils\Base64Utils;
+use App\Utils\GenerateTokensUtils;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use utils\email\EmailVerification;
+use App\Utils\email\EmailVerification;
 
-class UserServices
+class UserServices implements ServicesInterface
 {
 
-    private UserRepository $repository;
+    private static UserRepository $repository;
 
-    public function __construct(UserRepository $repository)
+    public function __construct(RepositoryInterface $repository)
     {
-        $this->repository = $repository;
+        self::$repository = $repository;
     }
 
     public function create(array $data): User | array | null
     {
         $validate = User::validate($data);
-        $emailValidate = $this->repository->getByEmail($data['email']);
+        $emailValidate = self::$repository->getByEmail($data['email']);
 
         if ($emailValidate instanceof User) {
             $validate['data'] = $data;
@@ -36,7 +35,7 @@ class UserServices
         } else if (isset($validate['errors'])) {
             return $validate;
         }
-        $user = $this->repository->save($validate['data']);
+        $user = self::$repository->save($validate['data']);
         if ($user instanceof User) {
             return $user;
         }
@@ -45,23 +44,23 @@ class UserServices
 
     public function read(int $id) : User | array | null
     {
-        $data = $this->repository->get($id);
+        $data = self::$repository->get($id);
         return $data;
     }
 
     public function update(array $data) : ?User
     {
-        return $this->repository->update($data);
+        return self::$repository->update($data);
     }
 
     public function delete($data) : bool | null
     {
-        return $this->repository->delete($data['id']);
+        return self::$repository->delete($data['id']);
     }
 
     public function userByEmailToLogin(String $email): User | null
     {
-        $user = $this->repository->getByEmail($email);
+        $user = self::$repository->getByEmail($email);
         if ($user != null && $user['actived']) {
             return $user;
         }
@@ -69,59 +68,29 @@ class UserServices
     }
 
 
-    public function login(?string $email, ?string $password)
+    public function verifyEmailToken(string $token)
     {
-
-        if ($email == null || $password == null) return ['error' => 'User or password is required', 'errorCode' => HttpStatus::HTTP_BAD_REQUEST];
-        $user = $this->repository->getByEmail($email);
-
-        if ($user == null) {
-            // throw new Exception("User not found");
-            return ['error' => 'User not found', 'errorCode' => HttpStatus::HTTP_NOT_FOUND];
-        } else if ($user->getEmailVerifiedAt() == null) {
-            $this->generateEmailVerification($user);
-            return ['error' => 'This e-mail has not verified', 'errorCode' => HttpStatus::HTTP_BAD_REQUEST];
-        } elseif ($user->getEmailVerifiedAt() != null && !$user->getActived()) {
-            return ['error' => 'User not allowed', 'errorCode' => HttpStatus::HTTP_FORBIDDEN];
-        } elseif ($user instanceof User) {
-            if (PasswordUtils::compare($password, $user->getPassword())) {
-                // $user->tokens()->delete();
-                // $token = $user->createToken($email, ['user' => $user])->plainTextToken;
-                $token = JWTTokenUtils::generate($user);
-                return ["token" => $token, "user" => $user->toArray()];
-            }
-        } elseif (isset($user['errors'])) {
-            $user['errorCode'] = HttpStatus::HTTP_INTERNAL_SERVER_ERROR;
-            return $user;
-        }
-
-
-        return ["errors" => "Incorrect Email or Password", "errorCode" => HttpStatus::HTTP_BAD_REQUEST];
+        return self::$repository->getEmailByVerifyToken(Base64Utils::base64_url_decode($token));
     }
 
-    public function generateEmailVerification(User $user)
+    public static function generateEmailVerification(User $user)
     {
         $exp_At = new DateTime('now', new DateTimeZone('America/Sao_Paulo'));
         $exp_At->add(DateInterval::createFromDateString('4 hour'));
         $stringDate =  $exp_At->format('Y-m-d H:i:s T');
         try {
-            $token = Utils::emailGenerateToken($user->getEmail(), $user->getId(), $stringDate);
+            $token = GenerateTokensUtils::emailGenerateToken($user->getEmail(), $user->getId(), $stringDate);
 
-            $ret = $this->repository->generateEmailVerification($user->getEmail(), $token, $stringDate);
+            $ret = self::$repository->generateEmailVerification($user->getEmail(), $token, $stringDate);
 
             if ($ret) {
-                $link = SERVER_HOST . API_ROUTE . '/user/email/verify/' . Utils::base64_url_encode($token);
+                $link = SERVER_HOST . API_ROUTE . '/user/email/verify/' . Base64Utils::base64_url_encode($token);
                 return EmailVerification::sendEmailVerificationNotification($user->getEmail(), $link, $stringDate, $user->getFullName());
             } else {
                 return false;
             }
         } catch (Exception $e) {
-            return ['error' => $e->getCode()];
+            throw $e;
         }
-    }
-
-    public function verifyEmailToken(string $token)
-    {
-        return $this->repository->getEmailByVerifyToken(Utils::base64_url_decode($token));
     }
 }

@@ -2,20 +2,22 @@
 
 namespace App\Users;
 
-use App\Database\MySqlDatabaseImpl;
+use App\Database\Databases;
+use App\Interfaces\RepositoryInterface;
 use App\Logging\Log;
 use App\Logging\LogTypeEnum;
 use App\Users\User;
+use App\Utils\Http\HttpStatus;
 use DateTime;
 use Exception;
 use PDOException;
 
-class UserRepository implements UserRepositoryInterface
+class UserRepository implements RepositoryInterface
 {
 
     private $db;
 
-    public function __construct(MySqlDatabaseImpl $db)
+    public function __construct(Databases $db)
     {
         $this->db = $db;
     }
@@ -72,19 +74,11 @@ class UserRepository implements UserRepositoryInterface
 
     public function update(array $data): User
     {
-        // $validated = UserValidator::make($data)->validated();
         $user = self::get($data['id']);
 
         if ($user == null || isset($user)) {
             throw new Exception("User not found");
         }
-
-        // $user->name = $validated['name'];
-        // $user->email = $validated['email'];
-        // $user->phone_number = $validated['phone_number'];
-        // $user->password = $validated['password'];
-
-        // $user->refresh();
 
         if ($user->getEmail() != $data['email']) {
             $data['email_verified_at'] = null;
@@ -111,24 +105,16 @@ class UserRepository implements UserRepositoryInterface
 
     public function getByEmail(string $email): User | null | array
     {
-        try{
-            $sql = "SELECT * FROM users where email=? limit 1;";
-        
-            $ret = $this->db->select($sql, [$email]);
+        $sql = "SELECT * FROM users where email=? limit 1;";
     
-            if (count($ret) == 0) return null;
-            $user = new User();
-    
-            $user->toObject($ret[0]);
-    
-            return $user;
-        }catch(PDOException $e){
-            new Log($e, LogTypeEnum::ERROR);
-            return ['errors'=>$e];
-        }catch(Exception $e){
-            new Log($e, LogTypeEnum::ERROR);
-            return ['errors'=>$e];
-        }
+        $ret = $this->db->select($sql, [$email]);
+
+        if (count($ret) == 0) return null;
+        $user = new User();
+
+        $user->toObject($ret[0]);
+
+        return $user;
 
     }
 
@@ -195,6 +181,60 @@ class UserRepository implements UserRepositoryInterface
             // echo $e;
             new Log($e, LogTypeEnum::ERROR);
             return false;
+        }
+    }
+
+    public function generateForgetPasswordRequest(int $idUser, string $code)
+    {
+        $dbConn = $this->db->getDBConn();
+
+        $dbConn->beginTransaction();
+        try{
+            $query = "insert into forget_password(user, code) values (?,?)";
+            $prepare = $dbConn->prepare($query, [$idUser, $code]);
+            $prepare->execute();
+            if($prepare->rowCount() == 1){
+                $dbConn->commit();
+                return true;
+            }else{
+                return false;
+            }
+        }catch(Exception $ex){
+            $dbConn->rollBack();
+            throw $ex;
+        }
+    }
+
+    public function verifyForgetPasswordRequest(string $email, string $code)
+    {
+        $dbConn = $this->db->getDBConn();
+
+        $dbConn->beginTransaction();
+        try{
+            $query = "select * from forget_password where email=? and code=? and expires_at<=current_timestamp and used=false;";
+            $prepare = $dbConn->prepare($query);
+            $prepare->execute([$email, $code]);
+
+            $data = $prepare->fetch();
+            
+            if(empty($data) || $data == null){
+                throw new Exception("Código inválido ou já utilizado", 400);
+            }else{
+                $query = "update forget_password set used=true where email=? and codigo=?";
+                $prepare = $dbConn->prepare($query);
+                $prepare->execute([$email, $code]);
+
+                if($prepare->rowCount() > 0){
+                    $dbConn->commit();
+                    return true;
+                }
+                else{
+                    throw new Exception("Houve um problema para processar a solicitação, tente novamente!", HttpStatus::HTTP_INTERNAL_SERVER_ERROR->value);
+                }
+            }
+        }catch(Exception $ex){
+            $dbConn->rollBack();
+            throw $ex;
         }
     }
 }

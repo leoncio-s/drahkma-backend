@@ -1,8 +1,8 @@
 <?php
 
-namespace utils\email;
+namespace App\Utils\email;
 
-use utils\HtmlTemplateParse;
+use App\Utils\HtmlTemplateParse;
 
 
 class EmailVerification extends SendEmail{

@@ -7,16 +7,17 @@ use App\Users\UserServices;
 use App\Users\UserRepository;
 use Bramus\Router\Router;
 use App\Auth\AuthController;
+use App\Auth\AuthService;
 use Routes\ApiRoute;
 
 class AuthRouteApi extends ApiRoute{
 
-    private UserServices $service;
+    private AuthService $service;
     private UserRepository $repo;
 
     public function __construct(Databases $db, Router $router) {
         $this->repo = new UserRepository($db);
-        $this->service = new UserServices($this->repo);
+        $this->service = new AuthService($this->repo);
 
         parent::__construct($db, $router);
     }
@@ -26,6 +27,8 @@ class AuthRouteApi extends ApiRoute{
 
         $default = API_ROUTE . '/auth';
         $this->router->post($default . '/login', fn()=>$controller->login());
+        $this->router->post($default . '/forget-password', fn()=>$controller->forgetPassword());
+        $this->router->post($default . '/forget-password/{email}', fn(string $email)=>$controller->forgetPasswordVerify($email));
     }
 
 }

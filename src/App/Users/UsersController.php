@@ -12,8 +12,6 @@ use App\Utils\Http\Request;
 use Exception;
 use PDOException;
 
-use function App\Utils\Http\autenticated;
-
 class UsersController{
 
 

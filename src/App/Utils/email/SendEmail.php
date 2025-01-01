@@ -1,15 +1,16 @@
 <?php
 
-namespace utils\email;
+namespace App\Utils\email;
 
 use Exception;
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
+// use PHPMailer\PHPMailer\SMTP;
 
 class SendEmail{
 
-    public static function sendMail(string $to, string $subject, string $htmlMessage, string $plainText = "", string $name= ''){
+    public static function sendMail(string $to, string $subject, string $htmlMessage, string $plainText = "", string $name= '')
+    {
         try{
             $mail = self::emailConnection();
             $mail->addAddress($to, $name);
@@ -21,7 +22,8 @@ class SendEmail{
             $ret = $mail->send();
             return $ret;
         }catch(Exception $e){
-            return ["error" => "Message could not be sent. Mailer Error: {$mail->ErrorInfo}"];
+            // return ["error" => "Message could not be sent. Mailer Error: {$mail->ErrorInfo}"];
+            throw new Exception("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
         }
     }
 
@@ -45,7 +47,7 @@ class SendEmail{
 
             return $mail;
         }catch(Exception $e){
-            throw $e;
+            throw new Exception("Mailer Error: {$mail->ErrorInfo}", previous:$e);
             // return ["error" =>  "Mailer Error: {$mail->ErrorInfo}"];
         }
     }

@@ -2,15 +2,8 @@
 
 namespace App\Utils;
 
-class Utils
+class Base64Utils
 {
-    public static function emailGenerateToken($email, $id, $exp): string
-    {
-        $data = 'lfinanca$' . $id . '$' . $exp;
-        $hash = hash_hmac('sha256', $data, $email);
-
-        return $hash;
-    }
 
 
     public static function base64_url_encode(string $data): string
