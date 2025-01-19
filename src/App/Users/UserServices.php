@@ -2,7 +2,6 @@
 
 namespace App\Users;
 
-use App\Interfaces\ServicesInterface;
 use App\Users\UserRepository;
 use App\Utils\JWTTokenUtils;
 use App\Utils\PasswordUtils;
@@ -110,7 +109,7 @@ class UserServices
             $ret = $this->repository->generateEmailVerification($user->getEmail(), $token, $stringDate);
 
             if ($ret) {
-                $link = SERVER_HOST . API_ROUTE . '/user/email/verify/' . Utils::base64_url_encode($token);
+                $link = SERVER_HOST . '/public' . API_ROUTE . '/user/email/verify/' . Utils::base64_url_encode($token);
                 return EmailVerification::sendEmailVerificationNotification($user->getEmail(), $link, $stringDate, $user->getFullName());
             } else {
                 return false;

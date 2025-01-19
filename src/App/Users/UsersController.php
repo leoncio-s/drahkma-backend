@@ -24,12 +24,17 @@ class UsersController{
 
 
     public function profile(){
-        
-        if(Autenticated::autenticated()){
-            $user = $this->services->read(Autenticated::getUserAuth()['id']);
+        try{
+            if(Autenticated::autenticated()){
+                $user = $this->services->read(Autenticated::getUserAuth()['id']);
+    
+                return Response::json($user->toArray(), HttpStatus::HTTP_OK);
+            }
 
-            return Response::json($user->toArray(), HttpStatus::HTTP_OK);
+        }catch(Exception $e){
+            return Response::json(['error'=>$e->getMessage()]);
         }
+
     }
 
     public function create()

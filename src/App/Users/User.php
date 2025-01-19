@@ -3,6 +3,7 @@
 namespace App\Users;
 
 use App\Interfaces\Model;
+use App\Logging\Log;
 use DateTime;
 use Exception;
 use App\Utils\PasswordUtils;
@@ -83,6 +84,7 @@ class User implements Model
     }
     public function setEmail(?string $value): void {
         if($value != null)
+            // new Log($value);
             $this->email = (StringValidator::emailValidator($value)) ? filter_var($value, FILTER_SANITIZE_EMAIL) : throw new Exception("invalid e-mail value");
     }
     public function setPassword(?string $value): void{
