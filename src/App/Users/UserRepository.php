@@ -24,7 +24,7 @@ class UserRepository implements RepositoryInterface
 
     public function get(int $id): User | null
     {
-        $sql = "SELECT * FROM users WHERE fullname like '%a%' or id=:id";
+        $sql = "SELECT * FROM users WHERE id=:id";
         $query = $this->db->select($sql, ['id' => $id]);
 
         if (count($query) != 0) {
@@ -120,16 +120,29 @@ class UserRepository implements RepositoryInterface
 
     public function updatePassword(int $id, string $password): User
     {
-        $sql = "UPDATE USERS SET password=?, updated_at=now() where id=?;";
+        $sql = "UPDATE users SET password=? , update_at=now() where id=? ;";
         $uAt =  self::get($id);
         $uAt->setPassword($password);
-        $uAt->setUpdatedAt((string)(new DateTime()));
 
-        $ret = $this->db->select($sql, [$uAt->getPassword(), $uAt->getId()]);
+        $conn = $this->db->getDBConn();
+        $conn->beginTransaction();
+        try{
+            $prepare = $conn->prepare($sql);
+            $prepare->execute([$uAt->getPassword(), $uAt->getId()]);
 
-        $uAt->toObject($ret);
+            if($prepare->rowCount()==1){
+                $conn->commit();
+                $ret = $this->get($uAt->getId());
+                return $ret;
+            }else{
+                $conn->rollBack();
+                throw new Exception("Não foi possível realizar a atualização");
+            }
 
-        return $uAt;
+        }catch(Exception $ex){
+            $conn->rollBack();
+            throw $ex;
+        }
     }
 
     public function generateEmailVerification($email, $token, $exp_At)
@@ -188,11 +201,16 @@ class UserRepository implements RepositoryInterface
     {
         $dbConn = $this->db->getDBConn();
 
-        $dbConn->beginTransaction();
+        if(!$dbConn->inTransaction())
+            $dbConn->beginTransaction();
         try{
-            $query = "insert into forget_password(user, code) values (?,?)";
-            $prepare = $dbConn->prepare($query, [$idUser, $code]);
-            $prepare->execute();
+            $query = "delete from forget_password where user=? and expires_at < current_timestamp and used=false;";
+            $prepare = $dbConn->prepare($query);
+            $prepare->execute([$idUser]);
+
+            $query = "insert into forget_password(user, code) values (?, ?)";
+            $prepare = $dbConn->prepare($query);
+            $prepare->execute([$idUser, $code]);
             if($prepare->rowCount() == 1){
                 $dbConn->commit();
                 return true;
@@ -205,24 +223,24 @@ class UserRepository implements RepositoryInterface
         }
     }
 
-    public function verifyForgetPasswordRequest(string $email, string $code)
+    public function verifyForgetPasswordRequest(string $idUser, string $code)
     {
         $dbConn = $this->db->getDBConn();
 
         $dbConn->beginTransaction();
         try{
-            $query = "select * from forget_password where email=? and code=? and expires_at<=current_timestamp and used=false;";
+            $query = "select * from forget_password where user=? and code=? and expires_at>=current_timestamp and used=false;";
             $prepare = $dbConn->prepare($query);
-            $prepare->execute([$email, $code]);
+            $prepare->execute([$idUser, $code]);
 
             $data = $prepare->fetch();
             
             if(empty($data) || $data == null){
-                throw new Exception("Código inválido ou já utilizado", 400);
+                throw new Exception("Código inválido", 400);
             }else{
-                $query = "update forget_password set used=true where email=? and codigo=?";
+                $query = "update forget_password set used=true where user=? and code=?";
                 $prepare = $dbConn->prepare($query);
-                $prepare->execute([$email, $code]);
+                $prepare->execute([$idUser, $code]);
 
                 if($prepare->rowCount() > 0){
                     $dbConn->commit();

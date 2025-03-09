@@ -13,8 +13,10 @@ use App\Users\UserServices;
 use App\Utils\email\ForgetPasswordEmail;
 use App\Utils\GenerateTokensUtils;
 use App\Utils\Http\HttpStatus;
+use App\Utils\Http\Response;
 use App\Utils\JWTTokenUtils;
 use App\Utils\PasswordUtils;
+use Exception;
 
 class AuthService implements ServicesInterface
  {
@@ -30,12 +32,12 @@ class AuthService implements ServicesInterface
     {
 
         if ($email == null || $password == null)
-            throw new InvalidEmailOrPasswordException("Email ou senha inválidos", 400);
+            throw new InvalidEmailOrPasswordException();
 
         $user = $this->repository->getByEmail($email);
 
         if ($user == null) {
-            throw new UserNotFoundException("Usuário não Encontrado", 404);
+            throw new UserNotFoundException();
         } else if ($user->getEmailVerifiedAt() == null) {
             UserServices::generateEmailVerification($user);
             throw new EmailInvalidatedException("Email não validado.", 400);
@@ -48,7 +50,7 @@ class AuthService implements ServicesInterface
             }
         }
 
-        throw new InvalidEmailOrPasswordException("E-mail ou senha incorretos.", 400);
+        throw new InvalidEmailOrPasswordException();
     }
 
     public function forgetPasswordRequest(string $email)
@@ -67,12 +69,33 @@ class AuthService implements ServicesInterface
         throw new UserNotFoundException("Email não localizado. Verifique!");
     }
 
-    public function forgetPasswordVerify(string $email, string $code)
-    {
-        if($this->repository->verifyForgetPasswordRequest($email, $code)){
-            return true;
+    public function newPassword(string $email, array $data){
+        if(isset($data['code']) && isset($data['password']) && isset($data['confpassword']))
+        {
+            if($data['password'] != $data['confpassword'])
+            {
+                throw new Exception("Senhas incompatíveis", 400);
+            }
+            $user = $this->repository->getByEmail($email);
+            $verify = $this->forgetPasswordVerify($user->getId(), code:$data['code']);
+            if($verify){
+                $nUser = $this->repository->updatePassword($user->getId(), $data['password']);
+                if($nUser instanceof User){
+                    return true;
+                }else{
+                    return false;
+                }
+            }else{
+                throw new Exception("Código inválido.", 400);
+            }
+        }else{
+            throw new Exception("Os campos de código, senha e confirmação de senha são obrigatórios.", 400);
         }
-        return false;
+    }
+
+    private function forgetPasswordVerify(string $email, string $code)
+    {
+        return $this->repository->verifyForgetPasswordRequest($email, $code);
     }
 
 }

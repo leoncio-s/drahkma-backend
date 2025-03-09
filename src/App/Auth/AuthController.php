@@ -32,7 +32,7 @@ class AuthController{
         if(isset($req['email'])){
             $sendEmail = $this->service->forgetPasswordRequest($req['email']);
             if($sendEmail){
-                return Response::json([]);
+                return Response::json(["message"=> "Enviamos um e-mail para " . $req['email'] . " com o código para redefinição da senha."]);
             }else{
                 return Response::json(["error" => "Ocorreu algum problema com a solicitação. Tente novamente em outro momento"], HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
             }
@@ -41,18 +41,13 @@ class AuthController{
         }
     }
 
-    public function forgetPasswordVerify(string $email){
+    public function newPassword(string $email){
 
         $req = Request::getAll();
-        if(isset($req['code'])){
-            $verify = $this->service->forgetPasswordVerify(email:$email, code:$req['code']);
-            if($verify){
-                return Response::json([]);
-            }else{
-                return Response::json(["error" => "Ocorreu algum problema com a solicitação. Tente novamente em outro momento"], HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
-            }
+        if($this->service->newPassword($email, $req)){
+            return Response::json(["message"=> "Senha alterada com sucesso."], 200);
         }else{
-            throw new Exception("Campo e-mail não localizado. Tente novamente!", 400);
+            return Response::json(["message"=> "Não foi possível realizar a alteração. Tente novamente."], HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

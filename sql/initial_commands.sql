@@ -48,7 +48,7 @@ create table if not exists categories(
     user bigint not null,
     created_at datetime not null default current_timestamp,
     update_at datetime on update current_timestamp,
-    foreign key (user) references users(id)
+    foreign key (user) references users(id),
     unique(user, description)
 );
 
@@ -83,12 +83,12 @@ create table if not exists items(
     foreign key (user) references users(id),
     foreign key (category) references categories(id),
     foreign key (card) references cards(id),
-    foreign key (transfer_bank) references transfer_bank(id) on delete cascade;
+    foreign key (transfer_bank) references transfer_bank(id) on delete cascade
 );
 
-create table email_verified(
+create table if not exists email_verified(
     email varchar(150) not null,
-    token text not null, 
+    token text not null,
     expires_at varchar(30) not null
 );
 

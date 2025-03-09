@@ -14,13 +14,14 @@ class ForgetPasswordEmail extends SendEmail{
         $toParse = fread($open, filesize($templateName));
 
         $fields = [
+            "FULLNAME" => $name,
             "CODE" => $code,
             "EXPIRATION" => $expirationTime
         ];
 
         $parse = HtmlTemplateParse::parse($toParse, $fields);
 
-        $plainText = "Olá!
+        $plainText = "Olá, $name!
 \n
 Você está recebendo este e-mail com o código para redefinição da sua senha na plataforma.
 \n            
@@ -32,7 +33,7 @@ O código é:
 {$code}
 \n
 \n
-O código é valido por {EXPIRATION} minutos.
+O código é valido por $expirationTime minutos.
 \n
 \n
 \n

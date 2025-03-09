@@ -28,7 +28,7 @@ class AuthRouteApi extends ApiRoute{
         $default = API_ROUTE . '/auth';
         $this->router->post($default . '/login', fn()=>$controller->login());
         $this->router->post($default . '/forget-password', fn()=>$controller->forgetPassword());
-        $this->router->post($default . '/forget-password/{email}', fn(string $email)=>$controller->forgetPasswordVerify($email));
+        $this->router->post($default . '/forget-password/{email}', fn(string $email)=>$controller->newPassword($email));
     }
 
 }

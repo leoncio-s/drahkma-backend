@@ -61,7 +61,8 @@ class MySqlDatabaseImpl extends Databases{
             foreach($files as $file){
                 if ($file == '.' or $file=='..') continue;
                 else if(pathinfo($file)['extension'] == "sql"){
-                    $conn = $this->db->beginTransaction();
+                    if(!$this->db->inTransaction())
+                        $this->db->beginTransaction();
                     try{
                         $filename = $directory . '/' . $file;
                         $open = fopen($filename, 'r') or die("error to open file " . $file);
@@ -69,12 +70,11 @@ class MySqlDatabaseImpl extends Databases{
                     
                         $this->db->exec($read);
                         unlink($filename);
-                        $this->db->commit();
+                        if($this->db->inTransaction())
+                            $this->db->commit();
                     }catch(Exception $e){
-                        // $this->db->rollBack();
-                        if($conn){
+                        if($this->db->inTransaction())
                             $this->db->rollBack();
-                        }
                         throw $e;
                     }finally{
                         fclose($open);

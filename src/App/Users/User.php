@@ -23,15 +23,15 @@ class User implements Model
     private ?DateTime $updated_at = null;
 
 
-    public function __construct(int $id = null,
-    string $fullname = null,
-    string $email = null,
-    string $password = null,
-    string $phone_number = null,
-    bool $actived = false,
-    string $email_verified_at = null,
-    string $created_at = null,
-    string $updated_at = null) {
+    public function __construct(?int $id = null,
+    ?string $fullname = null,
+    ?string $email = null,
+    ?string $password = null,
+    ?string $phone_number = null,
+    ?bool $actived = false,
+    ?string $email_verified_at = null,
+    ?string $created_at = null,
+    ?string $updated_at = null) {
         $this->setId($id);
         $this->setFullName($fullname);
         $this->setEmail($email);
