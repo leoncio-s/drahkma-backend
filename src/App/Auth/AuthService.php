@@ -59,7 +59,10 @@ class AuthService implements ServicesInterface
 
         if($user instanceof User){
             $code = GenerateTokensUtils::generateRandomTokenForgetPassword();
-            if($this->repository->generateForgetPasswordRequest($user->getId(), $code)){
+            $data = $this->repository->generateForgetPasswordRequest($user->getId(), $code);
+            if(gettype($data) === "array"){
+                return ForgetPasswordEmail::sendEmailForgetPassword($user->getEmail(), $user->getFullName(), $data["code"],  $data["expires_at"]);
+            }elseif($data){
                 return ForgetPasswordEmail::sendEmailForgetPassword($user->getEmail(), $user->getFullName(), $code);
             }else
             {
@@ -93,9 +96,9 @@ class AuthService implements ServicesInterface
         }
     }
 
-    private function forgetPasswordVerify(string $email, string $code)
+    private function forgetPasswordVerify(int $idUser, string $code)
     {
-        return $this->repository->verifyForgetPasswordRequest($email, $code);
+        return $this->repository->verifyForgetPasswordRequest($idUser, $code);
     }
 
 }

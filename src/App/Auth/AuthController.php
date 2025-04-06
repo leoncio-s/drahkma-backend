@@ -29,6 +29,7 @@ class AuthController{
 
     public function forgetPassword(){
         $req = Request::getAll();
+        // var_dump($req);
         if(isset($req['email'])){
             $sendEmail = $this->service->forgetPasswordRequest($req['email']);
             if($sendEmail){

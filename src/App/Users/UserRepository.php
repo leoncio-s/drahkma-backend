@@ -203,10 +203,21 @@ class UserRepository implements RepositoryInterface
 
         if(!$dbConn->inTransaction())
             $dbConn->beginTransaction();
+        
         try{
             $query = "delete from forget_password where user=? and expires_at < current_timestamp and used=false;";
             $prepare = $dbConn->prepare($query);
             $prepare->execute([$idUser]);
+
+            $query = "select user, code, created_at, TIMESTAMPDIFF(MINUTE, CURRENT_TIMESTAMP, expires_at) as expires_at from forget_password where user=? and used=false and TIMESTAMPDIFF(MINUTE, CURRENT_TIMESTAMP, expires_at) > 0;";
+            $prepare = $dbConn->prepare($query);
+            $prepare->execute([$idUser]);
+
+            $data = $prepare->fetch();
+            
+            if($data != null && count($data) > 0){
+                return $data;
+            }
 
             $query = "insert into forget_password(user, code) values (?, ?)";
             $prepare = $dbConn->prepare($query);
