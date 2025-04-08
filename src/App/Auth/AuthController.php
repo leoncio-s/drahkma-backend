@@ -48,7 +48,7 @@ class AuthController{
         if($this->service->newPassword($email, $req)){
             return Response::json(["message"=> "Senha alterada com sucesso."], 200);
         }else{
-            return Response::json(["message"=> "Não foi possível realizar a alteração. Tente novamente."], HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
+            return Response::json(["error"=> "Não foi possível realizar a alteração. Tente novamente."], HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
