@@ -63,9 +63,9 @@ class Categories implements Model
 
     public function toObject(array $data): Model
     {
-        $id = (isset($data['id']) && is_int($data['id']))? $data['id'] : null;
+        $id = (isset($data['id']))? intval($data['id']) : null;
         $description = (isset($data['description']))? $data['description'] : null;
-        $user = (isset($data['user']) && gettype($data['user']) == "integer")? $data['user'] : null;
+        $user = (isset($data['user']))? intval($data['user']) : null;
 
         $this->setId($id);
         $this->setDescription($description);

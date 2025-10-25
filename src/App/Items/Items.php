@@ -147,11 +147,11 @@ class Items implements Model
 
     public function toObject(array $data): Model
     {
-        $id = (isset($data['id']) && is_int($data['id'])) ? $data['id'] : null;
-        $user = (isset($data['user']) && is_int($data['user'])) ? $data['user'] : null;
+        $id = (isset($data['id'])) ? intval($data['id']) : null;
+        $user = (isset($data['user'])) ? intval($data['user']) : null;
         $description = (isset($data['description'])) ? $data['description'] : null;
         $expense = (isset($data['expense'])) ? boolval($data['expense']) : null;
-        $value = (isset($data['value']) && is_float($data['value'])) ? $data['value'] : null;
+        $value = (isset($data['value'])) ? floatval($data['value']) : null;
         $date = (isset($data['date'])) ? $data['date'] : null;
         $category = (isset($data['category']) || $data['category'] != null) ? (new Categories())->toObject(json_decode($data['category'], true)) : null;
         $card = (isset($data['card']) || $data['card'] != null) ? (new Cards())->toObject(json_decode($data['card'], true)) : null;

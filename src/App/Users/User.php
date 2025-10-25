@@ -134,7 +134,7 @@ class User implements Model
         );
     }
     public function toObject(array $data): Model{
-        $id = (isset($data['id'])) ? $data['id'] : null;
+        $id = (isset($data['id'])) ? intval($data['id']) : null;
         $fullname = (isset($data['fullname'])) ? $data['fullname'] : null;
         $email = (isset($data['email'])) ? $data['email'] : null;
         $password = (isset($data['password'])) ? $data['password'] : null;

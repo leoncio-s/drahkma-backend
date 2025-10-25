@@ -13,7 +13,6 @@ use App\Users\UserServices;
 use App\Utils\email\ForgetPasswordEmail;
 use App\Utils\GenerateTokensUtils;
 use App\Utils\Http\HttpStatus;
-use App\Utils\Http\Response;
 use App\Utils\JWTTokenUtils;
 use App\Utils\PasswordUtils;
 use Exception;

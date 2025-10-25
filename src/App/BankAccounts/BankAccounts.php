@@ -118,9 +118,9 @@ class BankAccounts implements Model
     public function toObject(array $data) : Model{
 
         // var_dump($data);
-        $id = (isset($data['id']) && gettype($data['id']) == 'integer') ? $data['id'] : null;
+        $id = (isset($data['id'])) ? intval($data['id']) : null;
         $bankCode = (isset($data['bankCode']) && gettype($data['bankCode']) == 'string') ? $data['bankCode'] : null;
-        $userId = (isset($data['user']) && gettype($data['user'])=="integer") ? $data['user'] : null;
+        $userId = (isset($data['user'])) ? intval($data['user']) : null;
         $bankName = (isset($data['bankName']) && gettype($data['bankName']) == 'string') ? $data['bankName'] : null;
         $agency = (isset($data['agency']) && gettype($data['agency']) == 'string') ? $data['agency'] : null;
         $accountNumber = (isset($data['accountNumber']) && gettype($data['accountNumber']) == 'string') ? $data['accountNumber'] : null;

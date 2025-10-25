@@ -82,11 +82,11 @@ class TransferBank implements Model
     public function toObject(array $data): Model
     {
         // var_dump($data);
-        $id = (isset($data['id']) && is_int($data['id'])) ? $data['id'] : null;
+        $id = (isset($data['id'])) ? intval($data['id']) : null;
         $type = (isset($data['type'])) ? TransferBankEnum::tryFrom($data['type']) : null;
         $description = (isset($data['description'])) ? $data['description'] : null;
         $bank_account = (isset($data['bank_account']) && is_array($data['bank_account'])) ? (new BankAccounts())->toObject($data['bank_account']) : null;
-        $user = (isset($data['user']) && is_int($data['user'])) ? $data['user'] : null;
+        $user = (isset($data['user'])) ? intval($data['user']) : null;
 
 
         $this->setId($id);
