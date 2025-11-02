@@ -24,15 +24,15 @@ class User implements Model
     private ?DateTime $updated_at = null;
 
 
-    public function __construct(int $id = null,
-    string $fullname = null,
-    string $email = null,
-    string $password = null,
-    string $phone_number = null,
-    bool $actived = false,
-    string $email_verified_at = null,
-    string $created_at = null,
-    string $updated_at = null) {
+    public function __construct(?int $id = null,
+    ?string $fullname = null,
+    ?string $email = null,
+    ?string $password = null,
+    ?string $phone_number = null,
+    ?bool $actived = false,
+    ?string $email_verified_at = null,
+    ?string $created_at = null,
+    ?string $updated_at = null) {
         $this->setId($id);
         $this->setFullName($fullname);
         $this->setEmail($email);
@@ -136,7 +136,7 @@ class User implements Model
         );
     }
     public function toObject(array $data): Model{
-        $id = (isset($data['id'])) ? $data['id'] : null;
+        $id = (isset($data['id'])) ? intval($data['id']) : null;
         $fullname = (isset($data['fullname'])) ? $data['fullname'] : null;
         $email = (isset($data['email'])) ? $data['email'] : null;
         $password = (isset($data['password'])) ? $data['password'] : null;

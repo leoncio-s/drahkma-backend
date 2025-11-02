@@ -30,14 +30,14 @@ class JWTTokenUtils{
         $body['exp'] = $exp->getTimestamp();
 
         try{
-            $payload_enc = Utils::base64url_encode(json_encode($payload));
-            $body_enc = Utils::base64url_encode(json_encode($body));
+            $payload_enc = Base64Utils::base64url_encode(json_encode($payload));
+            $body_enc = Base64Utils::base64url_encode(json_encode($body));
 
             $toSign = $payload_enc . '.' . $body_enc;
 
             $sign = hash_hmac('SHA256', $toSign, APP_KEY);
 
-            $sign_enc = Utils::base64url_encode($sign);
+            $sign_enc = Base64Utils::base64url_encode($sign);
             return $toSign . '.' . $sign_enc;
         }catch(Exception $e){
             throw $e;
@@ -53,13 +53,13 @@ class JWTTokenUtils{
         $body= $data[1];
         // $payload= Utils::base64url_decode($data[0]);
         // $body= Utils::base64url_decode($data[1]);
-        $sign= Utils::base64url_decode($data[2]);
+        $sign= Base64Utils::base64url_decode($data[2]);
 
 
         $verify = self::verifySign($payload, $body, $sign);
 
         if($verify == 1){
-            $body= Utils::base64url_decode($data[1]);
+            $body= Base64Utils::base64url_decode($data[1]);
             $body = json_decode($body, true);
             $body = json_decode($body['data'], true);
             return $body;
@@ -72,8 +72,8 @@ class JWTTokenUtils{
     }
 
     private static function verifySign(string $payload, string $data, string $sign) : int{
-        $body = Utils::base64url_decode($data);
-        $pay = Utils::base64url_decode($payload);
+        $body = Base64Utils::base64url_decode($data);
+        $pay = Base64Utils::base64url_decode($payload);
         $body_json = json_decode($body, true);
         $payload_json = json_decode($pay, true);
         $body_json['data'] = json_decode($body_json['data'], true);

@@ -4,6 +4,7 @@ namespace App\Items;
 
 use App\Items\ItemsRepository;
 use App\Interfaces\Model;
+use App\Interfaces\RepositoryInterface;
 use App\Interfaces\ServicesInterface;
 use App\Items\Items;
 use App\Users\User;
@@ -14,7 +15,7 @@ class ItemsService implements ServicesInterface
 {
 
     private ItemsRepository $repository;
-    public function __construct(ItemsRepository $repository)
+    public function __construct(RepositoryInterface $repository)
     {
         $this->repository = $repository;
     }

@@ -39,17 +39,17 @@ class MySqlDatabaseImpl extends Databases{
         
         try{
             $db = new PDO($connectionString, $username, $password, [
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8mb4'; SET GLOBAL time_zone = 'America/Sao_paulo';",
+                // PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8mb4'; SET GLOBAL time_zone = 'America/Sao_paulo';",
                 PDO::ATTR_ERRMODE,
                 PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_TIMEOUT=>10
             ]);
     
             $this->getSqlPathFiles();
             
             return $db;
         }catch(PDOException $e){
-            // echo $e->getMessage();
-            return null;
+            throw $e;
         }
 
         return null;
@@ -62,20 +62,20 @@ class MySqlDatabaseImpl extends Databases{
             foreach($files as $file){
                 if ($file == '.' or $file=='..') continue;
                 else if(pathinfo($file)['extension'] == "sql"){
-                    $this->db->beginTransaction();
+                    if(!$this->db->inTransaction())
+                        $this->db->beginTransaction();
                     try{
                         $filename = $directory . '/' . $file;
                         $open = fopen($filename, 'r') or die("error to open file " . $file);
                         $read = fread($open, filesize($filename));
                     
                         $this->db->exec($read);
-                        // $query->exec($read);
-                        // $query->execute();
                         unlink($filename);
-                        $this->db->commit();
+                        if($this->db->inTransaction())
+                            $this->db->commit();
                     }catch(Exception $e){
-                        $this->db->rollBack();
-                        // echo($e);
+                        if($this->db->inTransaction())
+                            $this->db->rollBack();
                         throw $e;
                     }finally{
                         fclose($open);

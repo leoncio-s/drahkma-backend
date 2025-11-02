@@ -2,27 +2,29 @@
 
 namespace App\Users;
 
-use App\Database\MySqlDatabaseImpl;
+use App\Database\Databases;
+use App\Interfaces\RepositoryInterface;
 use App\Logging\Log;
 use App\Logging\LogTypeEnum;
 use App\Users\User;
+use App\Utils\Http\HttpStatus;
 use DateTime;
 use Exception;
 use PDOException;
 
-class UserRepository implements UserRepositoryInterface
+class UserRepository implements RepositoryInterface
 {
 
     private $db;
 
-    public function __construct(MySqlDatabaseImpl $db)
+    public function __construct(Databases $db)
     {
         $this->db = $db;
     }
 
     public function get(int $id): User | null
     {
-        $sql = "SELECT * FROM users WHERE fullname like '%a%' or id=:id";
+        $sql = "SELECT * FROM users WHERE id=:id";
         $query = $this->db->select($sql, ['id' => $id]);
 
         if (count($query) != 0) {
@@ -72,19 +74,11 @@ class UserRepository implements UserRepositoryInterface
 
     public function update(array $data): User
     {
-        // $validated = UserValidator::make($data)->validated();
         $user = self::get($data['id']);
 
         if ($user == null || isset($user)) {
             throw new Exception("User not found");
         }
-
-        // $user->name = $validated['name'];
-        // $user->email = $validated['email'];
-        // $user->phone_number = $validated['phone_number'];
-        // $user->password = $validated['password'];
-
-        // $user->refresh();
 
         if ($user->getEmail() != $data['email']) {
             $data['email_verified_at'] = null;
@@ -111,39 +105,44 @@ class UserRepository implements UserRepositoryInterface
 
     public function getByEmail(string $email): User | null | array
     {
-        try{
-            $sql = "SELECT * FROM users where email=? limit 1;";
-        
-            $ret = $this->db->select($sql, [$email]);
+        $sql = "SELECT * FROM users where email=? limit 1;";
     
-            if (count($ret) == 0) return null;
-            $user = new User();
-    
-            $user->toObject($ret[0]);
-    
-            return $user;
-        }catch(PDOException $e){
-            new Log($e, LogTypeEnum::ERROR);
-            return ['errors'=>$e];
-        }catch(Exception $e){
-            new Log($e, LogTypeEnum::ERROR);
-            return ['errors'=>$e];
-        }
+        $ret = $this->db->select($sql, [$email]);
+
+        if (count($ret) == 0) return null;
+        $user = new User();
+
+        $user->toObject($ret[0]);
+
+        return $user;
 
     }
 
     public function updatePassword(int $id, string $password): User
     {
-        $sql = "UPDATE USERS SET password=?, updated_at=now() where id=?;";
+        $sql = "UPDATE users SET password=? , update_at=now() where id=? ;";
         $uAt =  self::get($id);
         $uAt->setPassword($password);
-        $uAt->setUpdatedAt((string)(new DateTime()));
 
-        $ret = $this->db->select($sql, [$uAt->getPassword(), $uAt->getId()]);
+        $conn = $this->db->getDBConn();
+        $conn->beginTransaction();
+        try{
+            $prepare = $conn->prepare($sql);
+            $prepare->execute([$uAt->getPassword(), $uAt->getId()]);
 
-        $uAt->toObject($ret);
+            if($prepare->rowCount()==1){
+                $conn->commit();
+                $ret = $this->get($uAt->getId());
+                return $ret;
+            }else{
+                $conn->rollBack();
+                throw new Exception("Não foi possível realizar a atualização");
+            }
 
-        return $uAt;
+        }catch(Exception $ex){
+            $conn->rollBack();
+            throw $ex;
+        }
     }
 
     public function generateEmailVerification($email, $token, $exp_At)
@@ -195,6 +194,76 @@ class UserRepository implements UserRepositoryInterface
             // echo $e;
             new Log($e, LogTypeEnum::ERROR);
             return false;
+        }
+    }
+
+    public function generateForgetPasswordRequest(int $idUser, string $code)
+    {
+        $dbConn = $this->db->getDBConn();
+
+        if(!$dbConn->inTransaction())
+            $dbConn->beginTransaction();
+        
+        try{
+            $query = "delete from forget_password where user=? and expires_at < current_timestamp and used=false;";
+            $prepare = $dbConn->prepare($query);
+            $prepare->execute([$idUser]);
+
+            $query = "select user, code, created_at, TIMESTAMPDIFF(MINUTE, CURRENT_TIMESTAMP, expires_at) as expires_at from forget_password where user=? and used=false and TIMESTAMPDIFF(MINUTE, CURRENT_TIMESTAMP, expires_at) > 0;";
+            $prepare = $dbConn->prepare($query);
+            $prepare->execute([$idUser]);
+
+            $data = $prepare->fetch();
+            
+            if($data != null && count($data) > 0){
+                return $data;
+            }
+
+            $query = "insert into forget_password(user, code) values (?, ?)";
+            $prepare = $dbConn->prepare($query);
+            $prepare->execute([$idUser, $code]);
+            if($prepare->rowCount() == 1){
+                $dbConn->commit();
+                return true;
+            }else{
+                return false;
+            }
+        }catch(Exception $ex){
+            $dbConn->rollBack();
+            throw $ex;
+        }
+    }
+
+    public function verifyForgetPasswordRequest(string $idUser, string $code)
+    {
+        $dbConn = $this->db->getDBConn();
+
+        $dbConn->beginTransaction();
+        try{
+            $query = "select * from forget_password where user=? and code=? and expires_at>=current_timestamp and used=false;";
+            $prepare = $dbConn->prepare($query);
+            $prepare->execute([$idUser, $code]);
+
+            $data = $prepare->fetch();
+            
+            if(empty($data) || $data == null){
+                throw new Exception("Código inválido", 400);
+            }else{
+                $query = "update forget_password set used=true where user=? and code=?";
+                $prepare = $dbConn->prepare($query);
+                $prepare->execute([$idUser, $code]);
+
+                if($prepare->rowCount() > 0){
+                    $dbConn->commit();
+                    return true;
+                }
+                else{
+                    throw new Exception("Houve um problema para processar a solicitação, tente novamente!", HttpStatus::HTTP_INTERNAL_SERVER_ERROR->value);
+                }
+            }
+        }catch(Exception $ex){
+            $dbConn->rollBack();
+            throw $ex;
         }
     }
 }

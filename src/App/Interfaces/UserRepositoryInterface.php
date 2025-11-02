@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Users;
+namespace App\Interfaces;
 
+use App\Interfaces\RepositoryInterface;
 use App\Users\User;
 
-interface UserRepositoryInterface{
+interface UserRepositoryInterface extends RepositoryInterface{
+
 
     public function get(int $id): User | null;
     public function save(array $data): User | array | null;

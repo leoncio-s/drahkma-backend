@@ -6,12 +6,13 @@ use App\BankAccounts\BankAccountsRepository;
 use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\BankAccounts\BankAccounts;
+use App\Interfaces\RepositoryInterface;
 
 class BankAccountsService implements ServicesInterface
 {
 
     private BankAccountsRepository $repository;
-    public function __construct(BankAccountsRepository $repository)
+    public function __construct(RepositoryInterface $repository)
     {
         $this->repository = $repository;
     }

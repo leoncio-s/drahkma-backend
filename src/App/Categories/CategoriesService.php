@@ -6,12 +6,13 @@ use App\Categories\CategoriesRepository;
 use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\Categories\Categories;
+use App\Interfaces\RepositoryInterface;
 
 class CategoriesService implements ServicesInterface
 {
 
     private CategoriesRepository $repository;
-    public function __construct(CategoriesRepository $repository)
+    public function __construct(RepositoryInterface $repository)
     {
         $this->repository = $repository;
     }

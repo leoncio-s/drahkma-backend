@@ -5,12 +5,13 @@ namespace App\Cards;
 use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\Cards\Cards;
+use App\Interfaces\RepositoryInterface;
 
 class CardsService implements ServicesInterface
 {
 
     private CardsRepository $repository;
-    public function __construct(CardsRepository $repository)
+    public function __construct(RepositoryInterface $repository)
     {
         $this->repository = $repository;
     }

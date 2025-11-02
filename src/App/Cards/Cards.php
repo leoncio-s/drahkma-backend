@@ -20,7 +20,15 @@ class Cards implements Model
     public ?string $last_4_digits;
     public ?int $invoice_day;
 
-    public function __construct(int $id = null, CardTypeEnum $cardTypeEnum = null, string $brand=null, CardFlagsEnum $cardFlagsEnum = null, string $expires_at = null, string $last4Digits = null, int $invoide_day = null, int $user=null) {
+    public function __construct(
+        ?int $id = null, 
+        ?CardTypeEnum $cardTypeEnum = null, 
+        ?string $brand=null, 
+        ?CardFlagsEnum $cardFlagsEnum = null, 
+        ?string $expires_at = null, 
+        ?string $last4Digits = null, 
+        ?int $invoide_day = null, 
+        ?int $user=null) {
         $this->setBrand($brand);
         $this->setExpiresAt($expires_at);
         $this->setFlag($cardFlagsEnum);
@@ -142,14 +150,14 @@ class Cards implements Model
 
 
     public function toObject(array $data) : Model {
-        $id = (isset($data['id']) && is_int($data['id'])) ? $data['id'] : null;
-        $user = (isset($data['user']) && gettype($data['user']) == "integer") ? $data['user'] : null;
+        $id = (isset($data['id'])) ? intval($data['id']) : null;
+        $user = (isset($data['user'])) ? intval($data['user']) : null;
         $cardTypeEnum = (isset($data['type'])) ? CardTypeEnum::tryFrom($data['type']) : null;
         $brand = (isset($data['brand'])) ? $data['brand'] : null;
         $cardFlagsEnum = (isset($data['flag'])) ? CardFlagsEnum::tryFrom($data['flag']) : null;
         $expires_at = (isset($data['expires_at'])) ? $data['expires_at'] : null;
         $last4Digits = (isset($data['last_4_digits'])) ? $data['last_4_digits'] : null;
-        $invoice_day = (isset($data['invoice_day']) && is_int($data['invoice_day'])) ? $data['invoice_day'] : null;
+        $invoice_day = (isset($data['invoice_day'])) ? intval($data['invoice_day']) : null;
 
 
         $this->setBrand($brand);

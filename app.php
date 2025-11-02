@@ -1,15 +1,15 @@
 <?php
 
-use App\Database\MySqlDatabaseImpl;
-use App\Services\UserServices;
-use App\Users\UserRepository;
+use App\Exceptions\EmailInvalidatedException;
+use App\Exceptions\Errors;
+use App\Logging\Log;
+use App\Logging\LogTypeEnum;
+use App\Utils\Http\HttpStatus;
+use App\Utils\Http\Response;
 
-// require __DIR__ . '/src/app/*/*.php';
-// require __DIR__ . '/src/app/Database/MySqlDbImpl.php';
+// use function App\Exceptions\exceptions_error_handler as errors;
 
-
-
-// require_once __DIR__ . '/src/app' . '*' . '.php';
+// exceptions_error_handler();
 
 spl_autoload_register(function($className){
     include __DIR__ . "/src/" . str_replace("\\", "/", $className) . '.php';

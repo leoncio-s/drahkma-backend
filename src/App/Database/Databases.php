@@ -39,22 +39,12 @@ abstract class Databases{
             // return $pdo;
             return $db;
         }catch(PDOException $e){
-            // throw $e->getCode();
-            // echo($e->getMessage());
-            // var_dump("DB connection Error");
-            // throw $e;
-            return null;
+            throw $e;
+            // return null;
         }
         return null;
     }
 
-    // protected function getConnection(){
-    //     if(!isset(self::$INSTANCE)){
-    //         return self::$INSTANCE;
-    //     }else{
-    //         self::$INSTANCE = $this->connect();
-    //     }
-    // }
 
     public function execute(string $sql){
         $this->db->beginTransaction();
@@ -68,14 +58,14 @@ abstract class Databases{
             $this->db->rollBack();
             // echo($e->getMessage());
 
-            return null;
+            // return null;
+            throw $e;
         }
     }
 
-    public function select(string $sql, array $parameters){
+    public function select(string $sql, array $parameters)
+    {
 
-        // echo isset(Databases::$INSTANCE);
-        // if(isset(Databases::$INSTANCE)) $this->connect();
         $this->db->beginTransaction();
         try{
             $ret = $this->db->prepare($sql);
@@ -90,16 +80,14 @@ abstract class Databases{
         }
     }
 
-    public function insert(string $sql, array $parameters){
+    public function insert(string $sql, array $parameters)
+    {
 
-        // echo isset(Databases::$INSTANCE);
-        // if(isset(Databases::$INSTANCE)) $this->connect();
 
         $this->db->beginTransaction();
         try{
             $ret = $this->db->prepare($sql);
 
-            // var_dump($ret);
             $ret->execute($parameters);
             $id = $this->db->lastInsertId();
             $this->db->commit();
@@ -107,7 +95,6 @@ abstract class Databases{
 
         }catch(Exception $e){
             $this->db->rollBack();
-            // echo($e->getMessage());
 
             throw $e;
         }
