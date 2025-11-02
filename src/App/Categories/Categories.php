@@ -12,7 +12,10 @@ class Categories implements Model
     private ?int $user;
 
 
-    public function __construct(int $id = null, string $description = null, int $user = null) {
+    public function __construct(
+        ?int $id = null, 
+        ?string $description = null, 
+        ?int $user = null) {
         $this->setId($id);
         $this->setDescription($description);
         $this->setUser($user);

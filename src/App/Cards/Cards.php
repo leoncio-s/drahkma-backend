@@ -20,7 +20,15 @@ class Cards implements Model
     public ?string $last_4_digits;
     public ?int $invoice_day;
 
-    public function __construct(int $id = null, CardTypeEnum $cardTypeEnum = null, string $brand=null, CardFlagsEnum $cardFlagsEnum = null, string $expires_at = null, string $last4Digits = null, int $invoide_day = null, int $user=null) {
+    public function __construct(
+        ?int $id = null, 
+        ?CardTypeEnum $cardTypeEnum = null, 
+        ?string $brand=null, 
+        ?CardFlagsEnum $cardFlagsEnum = null, 
+        ?string $expires_at = null, 
+        ?string $last4Digits = null, 
+        ?int $invoide_day = null, 
+        ?int $user=null) {
         $this->setBrand($brand);
         $this->setExpiresAt($expires_at);
         $this->setFlag($cardFlagsEnum);

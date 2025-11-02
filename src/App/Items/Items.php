@@ -26,15 +26,15 @@ class Items implements Model
 
 
     public function __construct(
-        int $id = null,
-        User $user = null,
-        string $description = null,
-        bool $expense = null,
-        float $value = null,
-        string $date = null,
-        Categories $category = null,
-        Cards $card = null,
-        TransferBank $transfer_bank = null) {
+        ?int $id = null,
+        ?User $user = null,
+        ?string $description = null,
+        ?bool $expense = null,
+        ?float $value = null,
+        ?string $date = null,
+        ?Categories $category = null,
+        ?Cards $card = null,
+        ?TransferBank $transfer_bank = null) {
         $this->setId($id);
         $this->setUser($user);
         $this->setDescription($description);
@@ -99,7 +99,8 @@ class Items implements Model
     }
     public function setDate(?string $value):void{
         try{
-            $this->date = new DateTime($value);
+            if($value <> null)
+                $this->date = new DateTime($value);
         }catch(Exception){
             $this->date = null;
         }

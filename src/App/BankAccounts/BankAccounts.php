@@ -31,7 +31,13 @@ class BankAccounts implements Model
     private ?string $agency = null;
     private ?string $accountNumber = null;
 
-    public function __construct(string $bankCode = null, int $userId = null, string $bankName = null, string $agency = null, string $accountNumber = null, int $id=null) {
+    public function __construct(
+        ?string $bankCode = null, 
+        ?int $userId = null, 
+        ?string $bankName = null, 
+        ?string $agency = null, 
+        ?string $accountNumber = null, 
+        ?int $id=null) {
         $this->setAccountNumber($accountNumber);
         $this->setBankCode($bankCode);
         $this->setAgency($agency);

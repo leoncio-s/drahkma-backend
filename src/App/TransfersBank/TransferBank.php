@@ -19,7 +19,12 @@ class TransferBank implements Model
     private ?BankAccounts $bank_account;
 
 
-    public function __construct(int $id = null, TransferBankEnum $type=null, string $description = null, BankAccounts $bankAccounts = null, User $user=null) {
+    public function __construct(
+        ?int $id = null, 
+        ?TransferBankEnum $type=null, 
+        ?string $description = null, 
+        ?BankAccounts $bankAccounts = null, 
+        ?User $user=null) {
         $this->setId($id);
         $this->setType($type);
         $this->setDescription($description);
