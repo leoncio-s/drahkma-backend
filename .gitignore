@@ -1,9 +1,10 @@
 vendor/
 logs/
 vscode/
-src/front_lfinanca/
+public/frontend/
+.git/
+.vscode/
 
 *.log
 *.ini
-
-public/frontend/
+*.env
