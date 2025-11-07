@@ -51,8 +51,6 @@ class JWTTokenUtils{
 
         $payload= $data[0];
         $body= $data[1];
-        // $payload= Utils::base64url_decode($data[0]);
-        // $body= Utils::base64url_decode($data[1]);
         $sign= Base64Utils::base64url_decode($data[2]);
 
 
@@ -87,9 +85,6 @@ class JWTTokenUtils{
             $exp = new DateTime();
             $exp->setTimestamp($body_json['exp']);
             $exp->setTimezone(new DateTimeZone('america/sao_paulo'));
-
-            // $body_enc = Utils::base64url_encode(json_encode($body_json));
-            // $payload_enc = Utils::base64url_encode(json_encode($payload_json));
     
             $vSign = '';
             $toSign = $payload . '.' . $data;
@@ -98,7 +93,7 @@ class JWTTokenUtils{
             
             $now = new DateTime('now', new DateTimeZone('america/sao_paulo'));
 
-            if(($now->getTimestamp() - $iat->getTimestamp()) <= 0) return 0;
+            if(($now->getTimestamp() - $iat->getTimestamp()) < 0) return 0;
             elseif(($exp->getTimestamp() - $now->getTimestamp()) <= 0) return 4;
             elseif($vSign != $sign) return 3;
             else return 1;
