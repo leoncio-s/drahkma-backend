@@ -31,6 +31,7 @@ class UsersRouteApi extends ApiRoute{
         $this->router->get($userRouter, fn() => $controller->profile());
         $this->router->post($userRouter, fn()=> $controller->create());
         $this->router->get($userRouter . '/email/verify/{$token}', fn(string $token) => $controller->emailVerified($token));
+        $this->router->put($userRouter, fn()=>$controller->update());
         // $this->router->get($userRouter, fn()=>$controller->create($_POST));
    }
 

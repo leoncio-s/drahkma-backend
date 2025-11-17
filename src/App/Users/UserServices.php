@@ -50,7 +50,8 @@ class UserServices implements ServicesInterface
 
     public function update(array $data) : ?User
     {
-        return self::$repository->update($data);
+        $data = self::$repository->update($data);
+        return $data;
     }
 
     public function delete($data) : bool | null

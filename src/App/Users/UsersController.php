@@ -10,6 +10,7 @@ use App\Utils\Http\HttpStatus as hS;
 use App\Utils\Http\HttpStatus;
 use App\Utils\Http\Request;
 use Exception;
+use InvalidArgumentException;
 use PDOException;
 
 class UsersController{
@@ -66,6 +67,23 @@ class UsersController{
             header('location: /');
         }else{
             echo "Token inválido ou já expirou. Tente novamente!";
+        }
+    }
+
+    public function update(){
+        if(Autenticated::autenticated())
+        {
+            $user = $this->services->read(Autenticated::getUserAuth()['id']);
+            $data = Request::getAll();
+            if(isset($data['fullname']) && isset($data['phone_number']) && isset($data['email']) && $data['email']==$user->getEmail())
+            {
+                $user->setFullName($data['fullname']);
+                $user->setPhoneNumber($data['phone_number']);
+                $data=$this->services->update($user->toArray());
+                return Response::json($data->toArray());
+            }else{
+                throw new InvalidArgumentException("campos email, fullname e phone_number são obrigatórios", 400);
+            }
         }
     }
 }
