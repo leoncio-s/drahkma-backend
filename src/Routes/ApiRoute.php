@@ -13,6 +13,9 @@ abstract class ApiRoute{
         header('Content-Type: application/json');
         $this->router = $route;
         $this->db=$db;
+
+        $this->router->before('PUT|GET|POST|DELETE', $this->api_route . '/.*', fn()=>cors());
+        $this->router->match('OPTIONS', $this->api_route . '/.*', fn()=>cors());
     }
 
     // abstract public function route(string $route, string $method);
