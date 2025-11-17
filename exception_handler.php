@@ -27,7 +27,17 @@ function exceptions_error_handler(Throwable $ex) {
         new Log($erro->toLogReturn(), LogTypeEnum::ERROR);
     }
 
-    $code = HttpStatus::tryFrom($ex->getCode());
+    try{
+        if(is_int($ex->getCode()))
+            $code = HttpStatus::tryFrom($ex->getCode());
+        else $code=null;
+    }catch(Exception $e)
+    {
+        $code=null;
+    }finally
+    {
+        new Log($ex);
+    }
 
     return Response::json($erro->toUserReturn(), $code == null ? HttpStatus::HTTP_INTERNAL_SERVER_ERROR : $code);
 }
