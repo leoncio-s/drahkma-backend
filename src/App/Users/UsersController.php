@@ -2,6 +2,7 @@
 
 namespace App\Users;
 
+use App\Logging\Log;
 use App\Users\User;
 use App\Users\UserServices;
 use App\Utils\Http\Autenticated;
@@ -9,6 +10,7 @@ use App\Utils\Http\Response;
 use App\Utils\Http\HttpStatus as hS;
 use App\Utils\Http\HttpStatus;
 use App\Utils\Http\Request;
+use Error;
 use Exception;
 use InvalidArgumentException;
 use PDOException;
@@ -83,6 +85,31 @@ class UsersController{
                 return Response::json($data->toArray());
             }else{
                 throw new InvalidArgumentException("campos email, fullname e phone_number são obrigatórios", 400);
+            }
+        }
+    }
+
+    public function updatePassword()
+    {
+        if(Autenticated::autenticated())
+        {
+            $user = Autenticated::getUserAuth();
+            $data = Request::getAll();
+            new Log(in_array(["password", "new_password", "conf_new_password"], $data));
+
+            if(!isset($data["password"]) && !isset($data["new_password"]) && !isset($data["conf_new_password"]) ){
+                throw new InvalidArgumentException("campos password, new_password e conf_new_password são obrigatórios", 422);
+            }
+            if($data["new_password"] <>$data["conf_new_password"])
+            {
+                throw new InvalidArgumentException("campos new_password e conf_new_password devem possui o mesmo valor", 422);
+            }
+            $returnServ = $this->services->updatePassword($user, $data['password'], $data['new_password'], $data['conf_new_password']);
+            if($returnServ)
+            {
+                return Response::json();
+            }else{
+                throw new Exception("Houve um erro ao processar a solicitação. Tente novamente mais tarde ou contate o administrador do sistema", 500);
             }
         }
     }

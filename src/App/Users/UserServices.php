@@ -2,6 +2,7 @@
 
 namespace App\Users;
 
+use App\Exceptions\UserNotFoundException;
 use App\Interfaces\RepositoryInterface;
 use App\Interfaces\ServicesInterface;
 use App\Users\UserRepository;
@@ -12,6 +13,8 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use App\Utils\email\EmailVerification;
+use App\Utils\PasswordUtils;
+use InvalidArgumentException;
 
 class UserServices implements ServicesInterface
 {
@@ -92,6 +95,33 @@ class UserServices implements ServicesInterface
             }
         } catch (Exception $e) {
             throw $e;
+        }
+    }
+
+    public function updatePassword(array $user, string $password, string $nPassword, string $cfNPassword)
+    {
+        $user = self::$repository->getByEmail($user["email"]);
+        if($user == null)
+        {
+            throw new UserNotFoundException();
+        }
+        if($cfNPassword <> $nPassword)
+        {
+            throw new InvalidArgumentException("campos new_password e conf_new_password devem possui o mesmo valor", 422);
+        }
+        if(!PasswordUtils::compare($password, $user->getPassword())){
+            throw new InvalidArgumentException("senha informada não confere", 422);
+        }
+        if(PasswordUtils::compare($nPassword, $user->getPassword())){
+            throw new InvalidArgumentException("Nova senha não pode ser igual a atual", 422);
+        }
+
+        $user = self::$repository->updatePassword($user->getId(), $nPassword);
+        if($user instanceof User)
+        {
+            return true;
+        }else{
+            return false;
         }
     }
 }
