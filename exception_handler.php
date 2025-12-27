@@ -11,7 +11,7 @@ use App\Exceptions\UserNotFoundException;
 use App\Logging\Log;
 use App\Logging\LogTypeEnum;
 
-
+use function PHPSTORM_META\type;
 
 function exceptions_error_handler(Throwable $ex) {
     ob_start();
@@ -21,12 +21,6 @@ function exceptions_error_handler(Throwable $ex) {
     if($ex instanceof EmailInvalidatedException){
         $erro->setMessage($erro->getMessage() . " Enviamos um novo email com o link para confirmação.");
     }
-    
-    if(!($ex instanceof UserNotFoundException || $ex instanceof EmailInvalidatedException || $ex instanceof InvalidEmailOrPasswordException))
-    {
-        new Log($erro->toLogReturn(), LogTypeEnum::ERROR);
-    }
-
     try{
         if(is_int($ex->getCode()))
             $code = HttpStatus::tryFrom($ex->getCode());
@@ -36,7 +30,12 @@ function exceptions_error_handler(Throwable $ex) {
         $code=null;
     }finally
     {
-        new Log($ex);
+        new Log(gettype($ex) . " - ".  $erro->toLogReturn(), LogTypeEnum::ERROR);
+    }
+
+    if($ex instanceof PDOException)
+    {
+        $erro->setMessage("Ocorreu um erro ao processar a solicitação no banco de dados, tente novamente mais tarde ou acione o administrador do sistema.");
     }
 
     return Response::json($erro->toUserReturn(), $code == null ? HttpStatus::HTTP_INTERNAL_SERVER_ERROR : $code);

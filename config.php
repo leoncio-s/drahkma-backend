@@ -40,3 +40,6 @@ else
 set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__ . '/src');
 
 $GLOBALS["DB_CONNECTION"] = new MySqlDatabaseImpl;
+
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
