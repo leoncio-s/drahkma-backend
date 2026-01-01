@@ -82,8 +82,6 @@ class TransferBankRepository implements RepositoryInterface
                 $prepare = $dbCon->prepare($sql);
                 $prepare->execute($fields);
 
-                new Log("fectch item :" . $prepare->fetch());
-
                 $dbCon->commit();
 
                 return $this->getByIdAndUser($data['id'], $data['user']);

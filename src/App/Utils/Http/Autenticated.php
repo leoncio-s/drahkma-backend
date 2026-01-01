@@ -3,7 +3,6 @@
 namespace App\Utils\Http;
 
 use App\Exceptions\UnauthenticatedException;
-use App\Exceptions\UserNotFoundException;
 use App\Utils\JWTTokenUtils;
 
 class Autenticated{

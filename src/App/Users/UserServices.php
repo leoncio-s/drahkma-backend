@@ -12,7 +12,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use App\Utils\email\EmailVerification;
+use App\Utils\Email\EmailVerification;
 use App\Utils\PasswordUtils;
 use InvalidArgumentException;
 

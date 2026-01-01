@@ -6,6 +6,7 @@ use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
 use App\Interfaces\RepositoryInterface;
 use App\Categories\Categories;
+use App\Logging\Log;
 use Exception;
 use PDOException;
 
@@ -110,9 +111,10 @@ class CategoriesRepository implements RepositoryInterface
                 }
             }
         } catch (PDOException $e) {
-            throw $e;
+            new Log($e);
             return ['error' => $e->getCode()];
         } catch (Exception $e) {
+            new Log($e);
             return ['error' => $e->getCode()];
         }
 

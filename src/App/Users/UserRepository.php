@@ -9,6 +9,7 @@ use App\Logging\Log;
 use App\Logging\LogTypeEnum;
 use App\Users\User;
 use App\Utils\Http\HttpStatus;
+use DateInterval;
 use DateTime;
 use Exception;
 use PDOException;
@@ -251,9 +252,9 @@ class UserRepository implements RepositoryInterface
                 return $data;
             }
 
-            $query = "insert into forget_password(user, code) values (?, ?)";
+            $query = "insert into forget_password(user, code, expires_at) values (?, ?, ?)";
             $prepare = $dbConn->prepare($query);
-            $prepare->execute([$idUser, $code]);
+            $prepare->execute([$idUser, $code, (new DateTime())->modify('+15 minutes')->format('Y-m-d H:i:s')]);
             if($prepare->rowCount() == 1){
                 $dbConn->commit();
                 return true;

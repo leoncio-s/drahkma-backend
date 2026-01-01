@@ -10,7 +10,7 @@ use App\Interfaces\ServicesInterface;
 use App\Users\User;
 use App\Users\UserRepository;
 use App\Users\UserServices;
-use App\Utils\email\ForgetPasswordEmail;
+use App\Utils\Email\ForgetPasswordEmail;
 use App\Utils\GenerateTokensUtils;
 use App\Utils\Http\HttpStatus;
 use App\Utils\JWTTokenUtils;

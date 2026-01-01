@@ -171,7 +171,6 @@ class ItemsRepository implements RepositoryInterface
 
                         if ($prepare->rowCount() > 0) {
                             $dbCon->commit();
-                            new Log($prepare);
                             return true;
                         } else {
                             return false;
