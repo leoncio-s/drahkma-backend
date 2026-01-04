@@ -45,7 +45,8 @@ class AuthController{
     public function newPassword(string $email){
 
         $req = Request::getAll();
-        if($this->service->newPassword($email, $req)){
+        $resp = $this->service->newPassword($email, $req);
+        if($resp){
             return Response::json(["message"=> "Senha alterada com sucesso."], 200);
         }else{
             return Response::json(["error"=> "Não foi possível realizar a alteração. Tente novamente."], HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
