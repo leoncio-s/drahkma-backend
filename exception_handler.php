@@ -8,6 +8,8 @@ use App\Utils\Http\Response;
 use App\Logging\Log;
 use App\Logging\LogTypeEnum;
 use App\Exceptions\Errors;
+use App\Exceptions\InvalidEmailOrPasswordException;
+use App\Exceptions\UnauthenticatedException;
 
 function exceptions_error_handler(Throwable $ex) {
     ob_start();
@@ -24,9 +26,6 @@ function exceptions_error_handler(Throwable $ex) {
     }catch(Exception $e)
     {
         $code=null;
-    }finally
-    {
-        new Log(gettype($ex) . " - ".  $erro->toLogReturn(), LogTypeEnum::ERROR);
     }
 
     if($ex instanceof PDOException)
@@ -34,7 +33,7 @@ function exceptions_error_handler(Throwable $ex) {
         $erro->setMessage("Ocorreu um erro ao processar a solicitação no banco de dados, tente novamente mais tarde ou acione o administrador do sistema.");
     }
 
-    new Log($ex);
+    if(!($ex instanceof InvalidEmailOrPasswordException) || !($ex instanceof UnauthenticatedException)) new Log($ex);
 
     return Response::json($erro->toUserReturn(), $code == null ? HttpStatus::HTTP_INTERNAL_SERVER_ERROR : $code);
 }
