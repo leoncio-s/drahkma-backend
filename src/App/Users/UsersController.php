@@ -26,7 +26,6 @@ class UsersController{
         
         if(Autenticated::autenticated()){
             $user = $this->services->read(Autenticated::getUserAuth()['id']);
-
             return Response::json($user->toArray(), HttpStatus::HTTP_OK);
         }
     }
