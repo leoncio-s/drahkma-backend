@@ -33,7 +33,7 @@ function exceptions_error_handler(Throwable $ex) {
         $erro->setMessage("Ocorreu um erro ao processar a solicitação no banco de dados, tente novamente mais tarde ou acione o administrador do sistema.");
     }
 
-    if(!($ex instanceof InvalidEmailOrPasswordException) || !($ex instanceof UnauthenticatedException)) new Log($ex);
+    if(!($ex instanceof InvalidEmailOrPasswordException) && !($ex instanceof UnauthenticatedException)) new Log($ex);
 
     return Response::json($erro->toUserReturn(), $code == null ? HttpStatus::HTTP_INTERNAL_SERVER_ERROR : $code);
 }
