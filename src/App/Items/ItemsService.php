@@ -29,6 +29,7 @@ class ItemsService implements ServicesInterface
             $data = $this->repository->save($data);
             return $data;
         }
+        return null;
     }
 
     public function read(int $idUser): ?array
@@ -45,6 +46,7 @@ class ItemsService implements ServicesInterface
             }
             return $validate;
         }
+        return null;
     }
 
     public function delete(array $data): bool | int | null
