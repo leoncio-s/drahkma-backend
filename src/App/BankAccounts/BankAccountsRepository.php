@@ -145,7 +145,7 @@ class BankAccountsRepository implements RepositoryInterface
         $select = $this->db->select($it, ['id' => $data['id'], "user" => $data['user']]);
 
         if ($select[0]['count'] > 0) {
-            return ['error' => "Have movement linked to this bank account, cannot delete"];
+            return ['error' => "Há itens vinculados a esta conta bancária, não é possível excluí-la."];
         }
 
 
