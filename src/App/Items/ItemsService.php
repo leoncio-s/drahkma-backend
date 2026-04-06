@@ -7,7 +7,6 @@ use App\Interfaces\Model;
 use App\Interfaces\RepositoryInterface;
 use App\Interfaces\ServicesInterface;
 use App\Items\Items;
-use App\Users\User;
 use App\Utils\Http\Autenticated;
 use DateTime;
 

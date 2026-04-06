@@ -5,7 +5,6 @@ namespace App\Items;
 use App\Cards\Cards;
 use App\Categories\Categories;
 use App\Interfaces\Model;
-use App\Logging\Log;
 use App\TransfersBank\TransferBank;
 use App\Users\User;
 use App\Validators\StringValidator;
