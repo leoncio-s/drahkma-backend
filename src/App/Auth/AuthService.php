@@ -15,6 +15,7 @@ use App\Utils\GenerateTokensUtils;
 use App\Utils\Http\HttpStatus;
 use App\Utils\JWTTokenUtils;
 use App\Utils\PasswordUtils;
+use ErrorException;
 use Exception;
 
 class AuthService implements ServicesInterface
@@ -36,7 +37,8 @@ class AuthService implements ServicesInterface
         $user = $this->repository->getByEmail($email);
 
         if ($user == null) {
-            throw new UserNotFoundException();
+            sleep(2);
+            throw new InvalidEmailOrPasswordException();
         } else if ($user->getEmailVerifiedAt() == null) {
             UserServices::generateEmailVerification($user);
             throw new EmailInvalidatedException("Email não validado.", 400);
@@ -44,6 +46,10 @@ class AuthService implements ServicesInterface
             return ['error' => 'User not allowed', 'errorCode' => HttpStatus::HTTP_FORBIDDEN];
         } elseif ($user instanceof User) {
             if (PasswordUtils::compare($password, $user->getPassword())) {
+                if(password_needs_rehash($user->getPassword(), PASSWORD_BCRYPT))
+                {
+                    $this->repository->updatePassword($user->getId(), $password);
+                }
                 $token = JWTTokenUtils::generate($user);
                 return ["token" => $token, "user" => $user->toArray()];
             }
@@ -68,7 +74,7 @@ class AuthService implements ServicesInterface
                 return null;
             }
         }
-        throw new UserNotFoundException("Email não localizado. Verifique!");
+        throw new UserNotFoundException("Houve um problema para realizar a solicitação. Verifique os dados e tente novamente!", 400);
     }
 
     public function newPassword(string $email, array $data){
