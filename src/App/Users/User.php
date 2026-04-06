@@ -164,12 +164,11 @@ class User implements Model
             'id' => $this->getId(),
             'fullname' => $this->getFullName(),
             'email' => $this->getEmail(),
-            // 'password' => $this->getPassword(),
             'phone_number' => $this->getPhoneNumber(),
             'actived' => $this->getActived(),
-            'email_verified_at' => $this->getEmailVerifiedAt(),
-            'created_at' => $this->getCreatedAt(),
-            'updated_at' => $this->getUpdatedAt()
+            'email_verified_at' => ($this->getEmailVerifiedAt() == null) ? null : $this->getEmailVerifiedAt()->format(DateTime::ATOM),
+            'created_at' => ($this->getCreatedAt() == null) ? null : $this->getCreatedAt()->format(DateTime::ATOM),
+            'updated_at' => ($this->getUpdatedAt() == null) ? null : $this->getUpdatedAt()->format(DateTime::ATOM)
         ];
     }
 
@@ -238,6 +237,12 @@ class User implements Model
         if(!isset($data['password']) || $data['password'] == "") {
             array_push($errors["password"], "Campo obrigatório");
         }
+
+        // Validação de senha
+        if(!isset($data['conf_password']) || $data['conf_password'] == "") {
+            array_push($errors["conf_password"], "Campo obrigatório");
+        }
+
 
         if(isset($data['password']) && (strlen($data['password']) < 8 || strlen($data['password']) > 20)) {
             array_push($errors["password"], "O tamanho minímo para o campo é 8 e o máximo é 20");

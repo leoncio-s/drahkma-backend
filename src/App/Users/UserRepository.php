@@ -87,10 +87,10 @@ class UserRepository implements RepositoryInterface
         }
 
         $data['updated_at'] = (new DateTime())->format('Y-m-d H:i:s');
-        $data['created_at'] = $data['created_at']->format('Y-m-d H:i:s');
+        $data['created_at'] = $data['created_at'];
         if($data['email_verified_at'] != null)
         {
-            $data['email_verified_at'] = $data['email_verified_at']->format('Y-m-d H:i:s');
+            $data['email_verified_at'] = $data['email_verified_at'];
         }
 
         $sql = "update users set fullname=:fullname, phone_number=:phone_number, email=:email, actived=:actived, email_verified_at=:email_verified_at where id=:id;";
@@ -116,7 +116,7 @@ class UserRepository implements RepositoryInterface
                 return $user;
             }elseif($count === 0){
                 $conn->rollBack();
-                throw new Exception("Dados já atualizados", 200);
+                throw new Exception("Dados já atualizados", 304);
             }else{
                 $conn->rollBack();
                 throw new Exception("Não foi possível atualizar os dados do usuário.", 400);
