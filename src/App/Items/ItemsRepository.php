@@ -213,7 +213,7 @@ else
 	i.transfer_bank 
 end as transfer_bank
 from items i
-left join categories c on c.id = i.category and c.`user` = i.`user` 
+left join categories c on c.id = i.category and (c.`user` = i.`user` or c.`user`=-1)
 left join cards c2 on c2.id = i.card and c2.`user` = i.`user` 
 left join transfer_bank t on t.id = i.transfer_bank
 left join bank_accounts b on b.id=t.bank_account
@@ -249,7 +249,7 @@ else
 	i.transfer_bank 
 end as transfer_bank
 from items i
-left join categories c on c.id = i.category and c.`user` = i.`user` 
+left join categories c on c.id = i.category and (c.`user` = i.`user` or c.`user` = -1)
 left join cards c2 on c2.id = i.card and c2.`user` = i.`user` 
 left join transfer_bank t on t.id = i.transfer_bank
 left join bank_accounts b on b.id=t.bank_account
@@ -264,7 +264,7 @@ where i.id=? and i.user=?";
 
             return null;
         } catch (PDOException $e) {
-            new Log($e);
+            new Log($e, LogTypeEnum::ERROR);
             return ["errors" => $e->getCode()];
         }
     }
@@ -286,7 +286,7 @@ else
 	i.transfer_bank 
 end as transfer_bank
 from items i
-left join categories c on c.id = i.category and c.`user` = i.`user` 
+left join categories c on c.id = i.category and (c.`user` = i.`user` or c.`user`=-1)
 left join cards c2 on c2.id = i.card and c2.`user` = i.`user` 
 left join transfer_bank t on t.id = i.transfer_bank
 left join bank_accounts b on b.id=t.bank_account
@@ -325,7 +325,7 @@ else
 	i.transfer_bank 
 end as transfer_bank
 from items i
-left join categories c on c.id = i.category and c.`user` = i.`user` 
+left join categories c on c.id = i.category and (c.`user` = i.`user` or c.`user`=-1)
 left join cards c2 on c2.id = i.card and c2.`user` = i.`user` 
 left join transfer_bank t on t.id = i.transfer_bank
 left join bank_accounts b on b.id=t.bank_account
@@ -373,7 +373,7 @@ else
 	i.transfer_bank 
 end as transfer_bank
 from items i
-left join categories c on c.id = i.category and c.`user` = i.`user` 
+left join categories c on c.id = i.category and (c.`user` = i.`user` or c.`user`=-1)
 left join cards c2 on c2.id = i.card and c2.`user` = i.`user` 
 left join transfer_bank t on t.id = i.transfer_bank
 left join bank_accounts b on b.id=t.bank_account
@@ -424,6 +424,7 @@ order by date desc;";
 
         $data['totalAmountInflowCards'] = $this->getInTotalAmountsByCard($start_date, $finish_date, $userId);
         $data['totalAmountOutflowCards'] = $this->getOutTotalAmountsByCard($start_date, $finish_date, $userId);
+
 
         return $data;
     }
@@ -496,7 +497,7 @@ order by date desc;";
             $conn = $this->db->getDBConn();
 
             $sql = "SELECT COALESCE(truncate(sum(i.value),2), 0.00) as total, c.description FROM items i " .
-                "left join categories c on c.id = i.category and c.user=:user_id " .
+                "left join categories c on c.id = i.category and (c.user=:user_id or c.user=-1) " .
                 "where i.date between :start_date and :finish_date and i.user=:user_id and i.expense=false and not i.category is null " .
                 "group by i.category";
 
@@ -533,7 +534,7 @@ order by date desc;";
             $conn = $this->db->getDBConn();
 
             $sql = "SELECT COALESCE(truncate(sum(i.value),2), 0.00) as total, c.description FROM items i " .
-                "left join categories c on c.id = i.category and c.user=:user_id " .
+                "left join categories c on c.id = i.category and (c.user=:user_id or c.user=-1)" .
                 "where i.date between :start_date and :finish_date and i.user=:user_id and i.expense=true and not i.category is null " .
                 "group by i.category";
 

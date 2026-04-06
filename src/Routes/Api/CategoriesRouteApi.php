@@ -25,7 +25,8 @@ class CategoriesRouteApi extends ApiRoute{
     {
         $this->router->mount(API_ROUTE . "/categories", function(){
             $controller = new CategoriesController($this->service);
-            $this->router->get("/", fn()=>$controller->getAll());
+            $this->router->get("/", fn()=>$controller->getByUser());
+            $this->router->get("/all", fn()=>$controller->getAll());
             $this->router->post("/", fn()=>$controller->create());
             $this->router->put('/', fn()=> $controller->update());
             $this->router->delete('/{id}', fn(int $id)=>$controller->delete($id));

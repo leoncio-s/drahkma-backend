@@ -7,6 +7,7 @@ use App\Interfaces\Model;
 use App\Interfaces\RepositoryInterface;
 use App\Categories\Categories;
 use App\Logging\Log;
+use App\Logging\LogTypeEnum;
 use Exception;
 use PDOException;
 
@@ -111,10 +112,10 @@ class CategoriesRepository implements RepositoryInterface
                 }
             }
         } catch (PDOException $e) {
-            new Log($e);
+            new Log($e, LogTypeEnum::ERROR);
             return ['error' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e);
+            new Log($e, LogTypeEnum::ERROR);
             return ['error' => $e->getCode()];
         }
 
@@ -128,9 +129,8 @@ class CategoriesRepository implements RepositoryInterface
         $select = $this->db->select($it, ['id' => $data['id'], "user" => $data['user']]);
 
         if ($select[0]['count'] > 0) {
-            return ['error' => "Have movement linked to this category, cannot delete"];
+            return ['error' => "Há itens vinculados a esta categoria, não é possível excluí-la."];
         }
-
 
         $conn = $this->db->getDBConn();
         $conn->beginTransaction();
@@ -196,11 +196,49 @@ class CategoriesRepository implements RepositoryInterface
         }
     }
 
+    public function getAllByUser(int $userId)
+    {
+        try {
+            $ret = [];
+            $sql = "select 
+                    description,
+                    `user`,
+                    id,
+                    created_at,
+                    update_at
+                from (
+                    select 
+                        c.*,
+                        row_number() over (
+                            partition by c.description 
+                            order by c.`user` asc
+                        ) as rn
+                    from categories c
+                    where c.`user` in (?, -1)
+                ) t
+                where t.rn = 1
+                order by description;";
+            $data = $this->db->select($sql, [$userId]);
+
+            if (count($data) > 0) {
+                foreach ($data as $ac) {
+                    $account = new Categories();
+                    $account->toObject($ac);
+                    array_push($ret, $account->toArray());
+                    // unset($account);
+                }
+            }
+            return $ret;
+        } catch (PDOException $e) {
+            return null;
+        }
+    }
+
     public function getByIdAndUser(int $id, int $userId)
     {
         try {
             $ret = null;
-            $sql = "select * from categories where user=? and id=? order by description;";
+            $sql = "select * from categories where user in (?, -1) and id=? order by description;";
             $data = $this->db->select($sql, [$userId, $id]);
 
             if (count($data) > 0) {

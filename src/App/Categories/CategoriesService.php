@@ -8,6 +8,7 @@ use App\Interfaces\ServicesInterface;
 use App\Categories\Categories;
 use App\Interfaces\RepositoryInterface;
 use App\Logging\Log;
+use App\Logging\LogTypeEnum;
 use Exception;
 
 class CategoriesService implements ServicesInterface
@@ -37,6 +38,11 @@ class CategoriesService implements ServicesInterface
         return $this->repository->getByUser($idUser);
     }
 
+    public function readAllByUser(int $idUser): ?array
+    {
+        return $this->repository->getAllByUser($idUser);
+    }
+
     public function update(array $data) : Model | array | null
     {
         try{
@@ -53,7 +59,7 @@ class CategoriesService implements ServicesInterface
             return null;
         }catch(Exception $e)
         {
-            new Log($e);
+            new Log($e, LogTypeEnum::ERROR);
             throw new Exception("Erro ao processar a solicitação", 500, $e);
         }
     }
