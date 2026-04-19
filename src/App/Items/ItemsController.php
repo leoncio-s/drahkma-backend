@@ -4,7 +4,6 @@ namespace App\Items;
 
 use App\Items\Items;
 use App\Items\ItemsService;
-use App\Logging\Log;
 use App\Utils\Http\Autenticated;
 use App\Utils\Http\HttpStatus;
 use App\Utils\Http\Request;
@@ -126,5 +125,6 @@ class ItemsController {
             }
             return Response::json([], HttpStatus::HTTP_BAD_REQUEST);
         }
+        return null;
     }
 }

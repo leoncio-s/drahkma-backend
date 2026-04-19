@@ -6,6 +6,8 @@ use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\Cards\Cards;
 use App\Interfaces\RepositoryInterface;
+use App\Logging\Log;
+use Exception;
 
 class CardsService implements ServicesInterface
 {
@@ -26,6 +28,7 @@ class CardsService implements ServicesInterface
             $data = $this->repository->save($validation['data']);
             return $data;
         }
+        return null;
     }
 
     public function read(int $idUser) : ?array
@@ -42,15 +45,20 @@ class CardsService implements ServicesInterface
             }
             return $ret;
         }
+        return null;
     }
 
-    public function delete(array $data) : bool | int | null
+    public function delete(array $data) : bool | int | null | array
     {
-        if (isset($data['user'])) {
-            $data['user'] = $data['user'];
-            return $this->repository->delete($data);
-            // return 0;
+        try{
+            if (isset($data['user'])) {
+                $data['user'] = $data['user'];
+                return $this->repository->delete($data);
+            }
+            return 0;
+        }catch(Exception $e)
+        {
+            throw $e;
         }
-        return 0;
     }
 }

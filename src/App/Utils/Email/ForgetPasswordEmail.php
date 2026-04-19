@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Utils\email;
+namespace App\Utils\Email;
 
 use App\Utils\Email\SendEmail;
 use App\Utils\HtmlTemplateParse;

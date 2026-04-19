@@ -8,6 +8,7 @@ use DateTime;
 use Exception;
 use App\Utils\PasswordUtils;
 use App\Validators\StringValidator;
+use InvalidArgumentException;
 
 class User implements Model
 {
@@ -79,21 +80,20 @@ class User implements Model
     }
     public function setFullName(?string $value): void {
         if($value != null)
-            $this->fullname = (strlen($value) >= 3 && strlen($value) <= 100 && StringValidator::namesValidate($value)) ? $value : throw new Exception("invalid full name value for {$value}");
+            $this->fullname = (strlen($value) >= 3 && strlen($value) <= 100 && StringValidator::namesValidate($value)) ? $value : throw new InvalidArgumentException("invalid full name value for {$value}", 422);
         
     }
     public function setEmail(?string $value): void {
         if($value != null)
-            // new Log($value);
-            $this->email = (StringValidator::emailValidator($value)) ? filter_var($value, FILTER_SANITIZE_EMAIL) : throw new Exception("invalid e-mail value");
+            $this->email = (StringValidator::emailValidator($value)) ? filter_var($value, FILTER_SANITIZE_EMAIL) : throw new InvalidArgumentException("invalid e-mail value", 422);
     }
     public function setPassword(?string $value): void{
         if($value)
-            $this->password = (StringValidator::passwordValidator($value)) ? PasswordUtils::encoder($value) : throw new Exception("Invalid value for password field");
+            $this->password = (StringValidator::passwordValidator($value)) ? PasswordUtils::encoder($value) : throw new InvalidArgumentException("Invalid value for password field", 422);
     }
     public function setPhoneNumber(?string $value): void{
         if($value != null)
-            $this->phone_number = (StringValidator::phoneNumbersValidator($value)) ? $value : throw new Exception("invalid phone number");
+            $this->phone_number = (StringValidator::phoneNumbersValidator($value)) ? $value : throw new InvalidArgumentException("invalid phone number", 422);
     }
     public function setActived(?bool $value): void {
         $this->actived = $value;
@@ -102,21 +102,21 @@ class User implements Model
         try{
             $this->email_verified_at = ($value != null)?new DateTime($value) : null;
         }catch(Exception){
-            throw new Exception("invalid Email verified Date");
+            throw new InvalidArgumentException("invalid Email verified Date", 422);
         }
     }
     public function setCreatedAt(?string $value): void{
         try{
             $this->created_at = ($value != null)?new DateTime($value) : null;
         }catch(Exception){
-            throw new Exception("invalid created Date");
+            throw new InvalidArgumentException("invalid created Date", 422);
         }
     }
     public function setUpdatedAt(?string $value): void{
         try{
             $this->updated_at = ($value != null)?new DateTime($value) : null;
         }catch(Exception){
-            throw new Exception("invalid updated Date");
+            throw new InvalidArgumentException("invalid updated Date", 422);
         }
     }
 
@@ -149,7 +149,7 @@ class User implements Model
         $this->setId($id);
         $this->setFullName($fullname);
         $this->setEmail($email);
-        $this->password = $data['password'];
+        $this->password = $password;
         $this->setPhoneNumber($phone_number);
         $this->setActived($actived);
         $this->setEmailVerifiedAt($email_verified_at);
@@ -164,12 +164,11 @@ class User implements Model
             'id' => $this->getId(),
             'fullname' => $this->getFullName(),
             'email' => $this->getEmail(),
-            // 'password' => $this->getPassword(),
             'phone_number' => $this->getPhoneNumber(),
             'actived' => $this->getActived(),
-            'email_verified_at' => $this->getEmailVerifiedAt(),
-            'created_at' => $this->getCreatedAt(),
-            'updated_at' => $this->getUpdatedAt()
+            'email_verified_at' => ($this->getEmailVerifiedAt() == null) ? null : $this->getEmailVerifiedAt()->format(DateTime::ATOM),
+            'created_at' => ($this->getCreatedAt() == null) ? null : $this->getCreatedAt()->format(DateTime::ATOM),
+            'updated_at' => ($this->getUpdatedAt() == null) ? null : $this->getUpdatedAt()->format(DateTime::ATOM)
         ];
     }
 
@@ -238,6 +237,12 @@ class User implements Model
         if(!isset($data['password']) || $data['password'] == "") {
             array_push($errors["password"], "Campo obrigatório");
         }
+
+        // Validação de senha
+        if(!isset($data['conf_password']) || $data['conf_password'] == "") {
+            array_push($errors["conf_password"], "Campo obrigatório");
+        }
+
 
         if(isset($data['password']) && (strlen($data['password']) < 8 || strlen($data['password']) > 20)) {
             array_push($errors["password"], "O tamanho minímo para o campo é 8 e o máximo é 20");

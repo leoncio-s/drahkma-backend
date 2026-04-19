@@ -4,10 +4,13 @@ namespace App\Categories;
 
 use App\Categories\Categories;
 use App\Categories\CategoriesService;
+use App\Logging\Log;
+use App\Logging\LogTypeEnum;
 use App\Utils\Http\Autenticated;
 use App\Utils\Http\HttpStatus;
 use App\Utils\Http\Request;
 use App\Utils\Http\Response;
+use Exception;
 
 class CategoriesController
 {
@@ -32,11 +35,24 @@ class CategoriesController
         }
     }
 
-    public function getAll()
+    public function getByUser()
     {
         if (Autenticated::autenticated()) {
             $user_id = Autenticated::getUserAuth()['id'];
             $data = $this->service->read($user_id);
+            if ($data == null) {
+                return Response::json([], HttpStatus::HTTP_NO_CONTENT);
+            } else {
+                return Response::json($data);
+            }
+        }
+    }
+
+    public function getAll()
+    {
+        if (Autenticated::autenticated()) {
+            $user_id = Autenticated::getUserAuth()['id'];
+            $data = $this->service->readAllByUser($user_id);
             if ($data == null) {
                 return Response::json([], HttpStatus::HTTP_NO_CONTENT);
             } else {
@@ -53,19 +69,30 @@ class CategoriesController
 
     public function update()
     {
-        if (Autenticated::autenticated()) {
-            $data = Request::getAll();
-            if (isset($data['id']) && isset($data['description'])) {
-                $data['user'] = Autenticated::getUserAuth()['id'];
+        try{
+            if (Autenticated::autenticated()) {
+                $data = Request::getAll();
+                if (isset($data['id']) && isset($data['description'])) {
+                    $data['user'] = Autenticated::getUserAuth()['id'];
 
-                $ret = $this->service->update($data);
-                if (isset($ret['error'])) {
-                    return Response::json($ret, HttpStatus::HTTP_BAD_REQUEST);
+                    $ret = $this->service->update($data);
+        
+                    if($ret instanceof Categories)
+                    {
+                        return Response::json($ret->toArray());
+                    }else  if (isset($ret['error'])) {
+                        return Response::json($ret, HttpStatus::HTTP_BAD_REQUEST);
+                    }
+                    return Response::json($ret, 422);
+                } else {
+                    return Response::json([], HttpStatus::HTTP_BAD_REQUEST);
                 }
-                return Response::json($ret->toArray());
-            } else {
-                return Response::json([], HttpStatus::HTTP_BAD_REQUEST);
             }
+
+        }catch(Exception $e)
+        {
+            new Log($e, LogTypeEnum::ERROR);
+            throw new Exception("Erro ao processar a solicitação", 500, $e);
         }
     }
 

@@ -4,10 +4,12 @@ namespace App\Cards;
 
 use App\Cards\Cards;
 use App\Cards\CardsService;
+use App\Logging\Log;
 use App\Utils\Http\Autenticated;
 use App\Utils\Http\HttpStatus;
 use App\Utils\Http\Request;
 use App\Utils\Http\Response;
+use Exception;
 
 class CardsController
 {
@@ -65,7 +67,8 @@ class CardsController
 
     public function delete(int $id)
     {
-        if (Autenticated::autenticated()) {
+        try{
+            if (Autenticated::autenticated()) {
             $user = Autenticated::getUserAuth();
             $data = [
                 'id' => $id,
@@ -77,6 +80,11 @@ class CardsController
             } else {
                 return Response::json([]);
             }
+        }
+        }catch (Exception $e)
+        {
+            new Log($e);
+            return Response::json(["erro"=>$e->getMessage()], 400);
         }
     }
 }

@@ -11,6 +11,6 @@ use App\Utils\Http\Response;
 
 // exceptions_error_handler();
 
-spl_autoload_register(function($className){
-    include __DIR__ . "/src/" . str_replace("\\", "/", $className) . '.php';
-});
+// spl_autoload_register(function($className){
+//     include __DIR__ . "/src/" . str_replace("\\", "/", $className) . '.php';
+// });

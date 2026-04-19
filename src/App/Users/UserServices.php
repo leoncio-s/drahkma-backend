@@ -2,11 +2,9 @@
 
 namespace App\Users;
 
-<<<<<<< HEAD
-=======
+use App\Exceptions\UserNotFoundException;
 use App\Interfaces\RepositoryInterface;
 use App\Interfaces\ServicesInterface;
->>>>>>> development
 use App\Users\UserRepository;
 use App\Utils\Base64Utils;
 use App\Utils\GenerateTokensUtils;
@@ -14,7 +12,9 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use App\Utils\email\EmailVerification;
+use App\Utils\Email\EmailVerification;
+use App\Utils\PasswordUtils;
+use InvalidArgumentException;
 
 class UserServices implements ServicesInterface
 {
@@ -53,7 +53,8 @@ class UserServices implements ServicesInterface
 
     public function update(array $data) : ?User
     {
-        return self::$repository->update($data);
+        $data = self::$repository->update($data);
+        return $data;
     }
 
     public function delete($data) : bool | null
@@ -87,17 +88,40 @@ class UserServices implements ServicesInterface
             $ret = self::$repository->generateEmailVerification($user->getEmail(), $token, $stringDate);
 
             if ($ret) {
-<<<<<<< HEAD
-                $link = SERVER_HOST . '/public' . API_ROUTE . '/user/email/verify/' . Utils::base64_url_encode($token);
-=======
                 $link = SERVER_HOST . API_ROUTE . '/user/email/verify/' . Base64Utils::base64_url_encode($token);
->>>>>>> development
                 return EmailVerification::sendEmailVerificationNotification($user->getEmail(), $link, $stringDate, $user->getFullName());
             } else {
                 return false;
             }
         } catch (Exception $e) {
             throw $e;
+        }
+    }
+
+    public function updatePassword(array $user, string $password, string $nPassword, string $cfNPassword)
+    {
+        $user = self::$repository->getByEmail($user["email"]);
+        if($user == null)
+        {
+            throw new UserNotFoundException();
+        }
+        if($cfNPassword <> $nPassword)
+        {
+            throw new InvalidArgumentException("campos new_password e conf_new_password devem possui o mesmo valor", 422);
+        }
+        if(!PasswordUtils::compare($password, $user->getPassword())){
+            throw new InvalidArgumentException("senha informada não confere", 422);
+        }
+        if(PasswordUtils::compare($nPassword, $user->getPassword())){
+            throw new InvalidArgumentException("Nova senha não pode ser igual a atual", 422);
+        }
+
+        $user = self::$repository->updatePassword($user->getId(), $nPassword);
+        if($user instanceof User)
+        {
+            return true;
+        }else{
+            return false;
         }
     }
 }

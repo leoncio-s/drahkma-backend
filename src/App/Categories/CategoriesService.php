@@ -7,6 +7,9 @@ use App\Interfaces\Model;
 use App\Interfaces\ServicesInterface;
 use App\Categories\Categories;
 use App\Interfaces\RepositoryInterface;
+use App\Logging\Log;
+use App\Logging\LogTypeEnum;
+use Exception;
 
 class CategoriesService implements ServicesInterface
 {
@@ -27,6 +30,7 @@ class CategoriesService implements ServicesInterface
             $data = $this->repository->save($data);
             return $data;
         }
+        return null;
     }
 
     public function read(int $idUser): ?array
@@ -34,17 +38,29 @@ class CategoriesService implements ServicesInterface
         return $this->repository->getByUser($idUser);
     }
 
+    public function readAllByUser(int $idUser): ?array
+    {
+        return $this->repository->getAllByUser($idUser);
+    }
+
     public function update(array $data) : Model | array | null
     {
-        if (isset($data['user'])) {
-            // $data['user'] = $data['user'];
-            $cat = Categories::validate($data, true);
-            if (isset($cat['errors'])) {
-                return $cat;
-            } else {
-                $ret = $this->repository->update($cat['data']);
-                return $ret;
+        try{
+            if (isset($data['user'])) {
+                // $data['user'] = $data['user'];
+                $cat = Categories::validate($data, true);
+                if (isset($cat['errors'])) {
+                    return $cat;
+                } else {
+                    $ret = $this->repository->update($cat['data']);
+                    return $ret;
+                }
             }
+            return null;
+        }catch(Exception $e)
+        {
+            new Log($e, LogTypeEnum::ERROR);
+            throw new Exception("Erro ao processar a solicitação", 500, $e);
         }
     }
 

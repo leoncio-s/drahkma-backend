@@ -3,11 +3,13 @@
 namespace App\Users;
 
 use App\Database\Databases;
+use App\Exceptions\UserNotFoundException;
 use App\Interfaces\RepositoryInterface;
 use App\Logging\Log;
 use App\Logging\LogTypeEnum;
 use App\Users\User;
 use App\Utils\Http\HttpStatus;
+use DateInterval;
 use DateTime;
 use Exception;
 use PDOException;
@@ -72,27 +74,58 @@ class UserRepository implements RepositoryInterface
         return null;
     }
 
-    public function update(array $data): User
+    public function update(array $data): User | null
     {
         $user = self::get($data['id']);
 
-        if ($user == null || isset($user)) {
-            throw new Exception("User not found");
+        if ($user == null || !isset($user)) {
+            throw new UserNotFoundException();
         }
 
         if ($user->getEmail() != $data['email']) {
             $data['email_verified_at'] = null;
         }
 
-        $data['updated_at'] = new DateTime();
+        $data['updated_at'] = (new DateTime())->format('Y-m-d H:i:s');
+        $data['created_at'] = $data['created_at'];
+        if($data['email_verified_at'] != null)
+        {
+            $data['email_verified_at'] = $data['email_verified_at'];
+        }
 
         $sql = "update users set fullname=:fullname, phone_number=:phone_number, email=:email, actived=:actived, email_verified_at=:email_verified_at where id=:id;";
 
-        $ret = $this->db->select($sql, $data);
+        $conn = $this->db->getDBConn();
+        $conn->beginTransaction();
+        try{
+            $prep = $conn->prepare($sql);
 
-        $nUser = new User();
-        $nUser->toObject($ret);
-        return $nUser;
+            $prep->execute([
+                "fullname"=>$data['fullname'],
+                "phone_number"=>$data['phone_number'],
+                "email"=>$data['email'],
+                "actived"=>$data['actived'],
+                "email_verified_at"=>$data['email_verified_at'],
+                "id"=>$data['id']]);
+
+            $count= $prep->rowCount();
+            if($count==1)
+            {
+                $conn->commit();
+                $user = self::get($data['id']);
+                return $user;
+            }elseif($count === 0){
+                $conn->rollBack();
+                throw new Exception("Dados já atualizados", 304);
+            }else{
+                $conn->rollBack();
+                throw new Exception("Não foi possível atualizar os dados do usuário.", 400);
+            }
+
+        }catch(PDOException $ex){
+            $conn->rollBack();
+            throw $ex;
+        }
     }
 
     public function delete(int $id): int | bool | null
@@ -219,9 +252,9 @@ class UserRepository implements RepositoryInterface
                 return $data;
             }
 
-            $query = "insert into forget_password(user, code) values (?, ?)";
+            $query = "insert into forget_password(user, code, expires_at) values (?, ?, ?)";
             $prepare = $dbConn->prepare($query);
-            $prepare->execute([$idUser, $code]);
+            $prepare->execute([$idUser, $code, (new DateTime())->modify('+15 minutes')->format('Y-m-d H:i:s')]);
             if($prepare->rowCount() == 1){
                 $dbConn->commit();
                 return true;

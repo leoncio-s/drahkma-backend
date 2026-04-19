@@ -60,7 +60,6 @@ class Categories implements Model
         return [
             'id'    => $this->getId(),
             'description' => $this->getDescription(),
-            // 'user' => $this->getUserId()];
         ];
     }
 
