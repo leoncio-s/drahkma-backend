@@ -125,5 +125,6 @@ class ItemsController {
             }
             return Response::json([], HttpStatus::HTTP_BAD_REQUEST);
         }
+        return null;
     }
 }
