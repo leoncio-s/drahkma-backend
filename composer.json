@@ -1,6 +1,6 @@
 {
     "name": "drahkma/backend",
-    "version": "2.1.0",
+    "version": "1.2.0",
     "require": {
         "php": ">=8.1",
         "bramus/router": "~1.6",
