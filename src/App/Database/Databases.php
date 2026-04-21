@@ -31,11 +31,14 @@ abstract class Databases{
         $dbName = "dbname=" . DB_DATABASE . ";";
         $username = DB_USERNAME;
         $password = DB_PASSWORD;
-        $connectionString = "mysql:" . $dbName . $host . $port;
+        $connectionString = "mysql:" . $dbName . $host . $port . ';charset=utf8mb4';
 
         try{
-            $db = new PDO($connectionString, $username, $password);
-            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $db = new PDO($connectionString, $username, $password, [
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4",
+                PDO::ATTR_ERRMODE,
+                PDO::ERRMODE_EXCEPTION
+            ]);
             // return $pdo;
             return $db;
         }catch(PDOException $e){
