@@ -200,24 +200,25 @@ class CategoriesRepository implements RepositoryInterface
     {
         try {
             $ret = [];
-            $sql = "select 
-                    description,
-                    `user`,
-                    id,
-                    created_at,
-                    update_at
-                from (
-                    select 
-                        c.*,
-                        row_number() over (
-                            partition by c.description 
-                            order by c.`user` asc
-                        ) as rn
-                    from categories c
-                    where c.`user` in (?, -1)
-                ) t
-                where t.rn = 1
-                order by description;";
+            $sql = "SELECT 
+                    c.description,
+                    c.`user`,
+                    c.id,
+                    c.created_at,
+                    c.update_at
+                FROM categories c
+                JOIN (
+                    SELECT 
+                        description,
+                        max(`user`) AS max_user
+                    FROM categories
+                    WHERE `user` IN (?, -1)
+                    GROUP BY description
+                ) t 
+                ON t.description = c.description 
+                AND t.max_user = c.`user`
+                ORDER BY c.description;";
+
             $data = $this->db->select($sql, [$userId]);
 
             if (count($data) > 0) {
@@ -230,6 +231,7 @@ class CategoriesRepository implements RepositoryInterface
             }
             return $ret;
         } catch (PDOException $e) {
+            new Log($e, LogTypeEnum::ERROR);
             return null;
         }
     }
