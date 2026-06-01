@@ -88,7 +88,7 @@ class Items implements Model
         $this->user = ($value >0 ) ? $value : null;
     }
     public function setDescription(?string $value):void{
-        $this->description = ($value != null && StringValidator::descrValidate($value) && strlen($value) > 3 && strlen($value) <= 100) ? $value :  null;
+        $this->description = ($value != null && StringValidator::descrValidate($value) && strlen($value) >= 3 && strlen($value) <= 100) ? $value :  null;
     }
     public function setExpense(?bool $value): void{
         $this->expense = $value;
