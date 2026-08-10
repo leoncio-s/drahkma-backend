@@ -1,3 +1,8 @@
+/*
+    @author: Leoncio
+    description: alter tables to add column on table card, and modify column value to decimal on table items
+*/
+
 /* add column initial_balance on bank_accounts */
 alter table bank_accounts add column initial_balance decimal(15,2) not null default 0.00;
 
