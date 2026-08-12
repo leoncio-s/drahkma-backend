@@ -9,5 +9,6 @@ public/frontend/
 *.ini
 *.env
 
+.httaccess
 */Database/sql/
 */Database/migrations/
