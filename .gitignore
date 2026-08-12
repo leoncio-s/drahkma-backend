@@ -8,3 +8,7 @@ public/frontend/
 *.log
 *.ini
 *.env
+
+.httaccess
+*/Database/sql/
+*/Database/migrations/
