@@ -56,7 +56,7 @@ class MySqlDatabaseImpl extends Databases{
     }
 
     private function getSqlPathFiles(){
-        $directory = __DIR__ . "/sql";
+        $directory = __DIR__ . "/migrations";
         if (file_exists($directory)){
             $files = scandir($directory);
             foreach($files as $file){
