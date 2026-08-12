@@ -1,7 +1,6 @@
 vendor/
 logs/
 vscode/
-public/frontend/
 .git/
 .vscode/
 
