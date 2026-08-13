@@ -21,3 +21,5 @@ vscode/
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+.editorconfig
