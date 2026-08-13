@@ -7,7 +7,17 @@ vscode/
 *.log
 *.ini
 *.env
+*.env.dev
 
 .httaccess
 */Database/sql/
 */Database/migrations/
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
