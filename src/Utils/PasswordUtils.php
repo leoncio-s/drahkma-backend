@@ -17,11 +17,11 @@ class PasswordUtils{
         return self::old_password_hash_pbkdf2($password) === $hash;
     }
 
-    public static function old_password_hash_pbkdf2($password) : string
+    public static function old_password_hash_pbkdf2(string $password) : string
     {
         $int = 100000;
 
-        $salt = APP_KEY;
+        $salt = $_ENV["APP_KEY"];
         return bin2hex(hash_pbkdf2("sha256", $password, $salt, $int, binary:true));
     }
 }
