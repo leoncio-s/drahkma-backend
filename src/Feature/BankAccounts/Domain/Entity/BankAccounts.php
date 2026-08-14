@@ -1,11 +1,10 @@
 <?php
 
-namespace App\BankAccounts;
+namespace App\Feature\BankAccounts\Domain\Entity;
 
 use App\Interfaces\Model;
 use App\Validators\StringValidator;
 
-use function PHPSTORM_META\type;
 
 class BankAccounts implements Model
 {

@@ -1,11 +1,12 @@
 <?php
 
-namespace App\BankAccounts;
+namespace App\Feature\BankAccounts\Infrastructure\Persistence;
 
+use App\Database\Databases;
 use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
-use App\BankAccounts\BankAccountRepositoryInterface;
-use App\BankAccounts\BankAccounts;
+use App\Feature\BankAccounts\Domain\Entity\BankAccounts;
+use App\Feature\BankAccounts\Domain\Repository\BankAccountRepositoryInterface;
 use App\Logging\Log;
 use App\Logging\LogTypeEnum;
 use Exception;
@@ -14,7 +15,7 @@ use PDOException;
 class BankAccountsRepository implements BankAccountRepositoryInterface
 {
 
-    private $db;
+    private Databases $db;
 
     public function __construct(MySqlDatabaseImpl $db)
     {
@@ -127,7 +128,7 @@ class BankAccountsRepository implements BankAccountRepositoryInterface
                 }
             }
         } catch (PDOException $e) {
-            throw $e;
+            // throw $e;
             new Log($e, LogTypeEnum::ERROR);
             return ['error' => $e->getCode()];
         } catch (Exception $e) {
@@ -138,7 +139,7 @@ class BankAccountsRepository implements BankAccountRepositoryInterface
         return $account;
     }
 
-    public function delete($data): bool | array
+    public function delete(array $data): bool | array
     {
 
         $it = "SELECT count(*) as count FROM transfer_bank where bank_account=:id and user=:user";

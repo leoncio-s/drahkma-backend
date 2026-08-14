@@ -1,8 +1,7 @@
 <?php
 
-namespace App\BankAccounts;
+namespace App\Feature\BankAccounts\Domain\Repository;
 
-use App\Database\Databases;
 use App\Database\MySqlDatabaseImpl;
 
 interface BankAccountRepositoryInterface{

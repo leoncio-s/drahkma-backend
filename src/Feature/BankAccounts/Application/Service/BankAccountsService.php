@@ -1,11 +1,11 @@
 <?php
 
-namespace App\BankAccounts;
+namespace App\Feature\BankAccounts\Application\Service;
 
-use App\BankAccounts\BankAccountsRepository;
+use App\Feature\BankAccounts\Domain\Repository\BankAccountRepositoryInterface;
+use App\Feature\BankAccounts\Infrastructure\Persistence\BankAccountsRepository;
 use App\Interfaces\Model;
-use App\BankAccounts\BankAccounts;
-use App\BankAccounts\BankAccountRepositoryInterface;
+use App\Feature\BankAccounts\Domain\Entity\BankAccounts;
 
 class BankAccountsService
 {
@@ -30,6 +30,7 @@ class BankAccountsService
             $data = $this->repository->save($data);
             return $data;
         }
+        return null;
     }
 
     public function read(int $idUser) : ?array
