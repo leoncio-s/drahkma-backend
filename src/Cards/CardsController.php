@@ -70,7 +70,7 @@ class CardsController
         }
     }
 
-    #[Route("/{id}", name:"delete", methods:["PUT"])]
+    #[Route("/{id}", name:"delete", methods:["DELETE"])]
     public function delete(int $id)
     {
         try{
