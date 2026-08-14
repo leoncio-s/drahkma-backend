@@ -2,17 +2,15 @@
 
 namespace App\TransfersBank;
 
-use App\BankAccounts\BankAccountsRepository;
 use App\Database\MySqlDatabaseImpl;
-use App\Interfaces\Model;
-use App\Interfaces\RepositoryInterface;
+use App\Feature\BankAccounts\Infrastructure\Persistence\BankAccountsRepository;
 use App\Logging\Log;
 use App\Logging\LogTypeEnum;
 use App\TransfersBank\TransferBank;
 use Exception;
 use PDOException;
 
-class TransferBankRepository implements RepositoryInterface
+class TransferBankRepository
 {
 
     private $db;

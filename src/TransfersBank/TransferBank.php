@@ -2,12 +2,11 @@
 
 namespace App\TransfersBank;
 
-use App\BankAccounts\BankAccounts;
+use App\Feature\BankAccounts\Domain\Entity\BankAccounts;
 use App\TransfersBank\TransferBankEnum;
 use App\Interfaces\Model;
 use App\Users\User;
 use App\Validators\StringValidator;
-use Exception;
 
 class TransferBank implements Model
 {
