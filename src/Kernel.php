@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Override;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 
@@ -15,5 +16,11 @@ class Kernel extends BaseKernel
     private function getAllowedEnvs(): array
     {
         return ['prod', 'dev', 'test'];
+    }
+
+    #[Override]
+    public function getLogDir(): string
+    {
+        return $this->getProjectDir() . '/public/log';
     }
 }
