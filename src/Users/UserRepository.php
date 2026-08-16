@@ -242,9 +242,10 @@ class UserRepository
                 return $data;
             }
 
-            $query = "insert into forget_password(user, code, expires_at) values (?, ?, ?)";
+            $query = "insert into forget_password(user, code, expires_at) values (?, ?, CURRENT_TIMESTAMP + INTERVAL 15 MINUTE)";
             $prepare = $dbConn->prepare($query);
-            $prepare->execute([$idUser, $code, (new DateTime())->modify('+15 minutes')->format('Y-m-d H:i:s')]);
+            // $prepare->execute([$idUser, $code, (new DateTime())->modify('+15 minutes')->format('Y-m-d H:i:s')]);
+            $prepare->execute([$idUser, $code]);
             if($prepare->rowCount() == 1){
                 $dbConn->commit();
                 return true;
