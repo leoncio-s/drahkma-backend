@@ -2,8 +2,6 @@
 
 namespace App\Utils\Http;
 
-use App\Logging\Log;
-use App\Logging\LogTypeEnum;
 use Exception;
 
 class Request{
@@ -18,7 +16,6 @@ class Request{
         try{
             return json_decode($get_content, true);
         }catch(Exception $e){
-            new Log($e, LogTypeEnum::INFO);
             return Response::json(["error" => "INTERNAL SERVER ERROR"], HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
         } 
     }
