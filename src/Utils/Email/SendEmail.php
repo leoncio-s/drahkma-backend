@@ -11,8 +11,8 @@ class SendEmail{
 
     public static function sendMail(string $to, string $subject, string $htmlMessage, string $plainText = "", string $name= '')
     {
+        $mail = self::emailConnection();
         try{
-            $mail = self::emailConnection();
             $mail->addAddress($to, $name);
 
             $mail->Subject = $subject;
@@ -23,7 +23,7 @@ class SendEmail{
             return $ret;
         }catch(Exception $e){
             // return ["error" => "Message could not be sent. Mailer Error: {$mail->ErrorInfo}"];
-            throw new Exception("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
+            throw new Exception("Message could not be sent. Mailer Error: {$e->getMessage()}--{$mail->ErrorInfo}");
         }
     }
 
@@ -32,14 +32,14 @@ class SendEmail{
         try{
             // $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
             $mail->isSMTP();                                            //Send using SMTP
-            $mail->Host       = MAIL_HOST;                     //Set the SMTP server to send through
+            $mail->Host       = $_ENV["MAIL_HOST"];                     //Set the SMTP server to send through
             $mail->SMTPAuth   = true;                               //Enable SMTP authentication
-            $mail->Username   = MAIL_USERNAME;                     //SMTP username
-            $mail->Password   = MAIL_PASSWORD;                               //SMTP password
+            $mail->Username   = $_ENV["MAIL_USERNAME"];                     //SMTP username
+            $mail->Password   = $_ENV["MAIL_PASSWORD"];                               //SMTP password
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-            $mail->Port       = MAIL_PORT;
+            $mail->Port       = $_ENV["MAIL_PORT"];
             
-            $mail->setFrom(MAIL_FROM_ADDRESS, MAIL_FROM_NAME);
+            $mail->setFrom($_ENV["MAIL_FROM_ADDRESS"], $_ENV["MAIL_FROM_NAME"]);
 
             $mail->isHTML(true);
             $mail->setLanguage("pt_br");
@@ -48,7 +48,6 @@ class SendEmail{
             return $mail;
         }catch(Exception $e){
             throw new Exception("Mailer Error: {$mail->ErrorInfo}", previous:$e);
-            // return ["error" =>  "Mailer Error: {$mail->ErrorInfo}"];
         }
     }
 }
