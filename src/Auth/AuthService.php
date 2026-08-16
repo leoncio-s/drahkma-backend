@@ -5,8 +5,6 @@ namespace App\Auth;
 use App\Exceptions\EmailInvalidatedException;
 use App\Exceptions\InvalidEmailOrPasswordException;
 use App\Exceptions\UserNotFoundException;
-use App\Interfaces\RepositoryInterface;
-use App\Interfaces\ServicesInterface;
 use App\Users\User;
 use App\Users\UserRepository;
 use App\Users\UserServices;
