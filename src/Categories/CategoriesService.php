@@ -5,17 +5,14 @@ namespace App\Categories;
 use App\Categories\CategoriesRepository;
 use App\Interfaces\Model;
 use App\Categories\Categories;
-use App\Logging\Log;
-use App\Logging\LogTypeEnum;
 use Exception;
+use Psr\Log\LoggerInterface;
 
 class CategoriesService
 {
 
-    private CategoriesRepository $repository;
-    public function __construct(CategoriesRepository $repository)
+    public function __construct(private CategoriesRepository $repository, private LoggerInterface $logger)
     {
-        $this->repository = $repository;
     }
 
     public function create(array $data) : Model | array | null
@@ -57,7 +54,7 @@ class CategoriesService
             return null;
         }catch(Exception $e)
         {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             throw new Exception("Erro ao processar a solicitação", 500, $e);
         }
     }

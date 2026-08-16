@@ -3,24 +3,18 @@
 namespace App\Feature\BankAccounts\Infrastructure\Persistence;
 
 use App\Database\Databases;
-use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
 use App\Feature\BankAccounts\Domain\Entity\BankAccounts;
 use App\Feature\BankAccounts\Domain\Repository\BankAccountRepositoryInterface;
-use App\Logging\Log;
-use App\Logging\LogTypeEnum;
 use Exception;
 use PDOException;
+use Psr\Log\LoggerInterface;
 
 class BankAccountsRepository implements BankAccountRepositoryInterface
 {
 
-    private Databases $db;
-
-    public function __construct(MySqlDatabaseImpl $db)
-    {
-        $this->db = $db;
-    }
+    public function __construct(private Databases $db, private LoggerInterface $logger)
+    {}
 
     public function save(array $data) : array | null |Model
     {
@@ -59,11 +53,10 @@ class BankAccountsRepository implements BankAccountRepositoryInterface
                 }
             }
         } catch (PDOException $e) {
-            // throw $e;
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         }
 
@@ -119,24 +112,22 @@ class BankAccountsRepository implements BankAccountRepositoryInterface
                     }
                 } catch (PDOException $e) {
                     $conn->rollBack();
-                    new Log($e, LogTypeEnum::ERROR);
+                    $this->logger->error($e->getMessage(), $e->getTrace());
                     return ['error' => $e->getCode()];
                 } catch (Exception $e) {
                     $conn->rollBack();
-                    new Log($e, LogTypeEnum::ERROR);
+                    $this->logger->error($e->getMessage(), $e->getTrace());
                     return ['error' => $e->getCode()];
                 }
             }
+            return $account;
         } catch (PDOException $e) {
-            // throw $e;
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         }
-
-        return $account;
     }
 
     public function delete(array $data): bool | array
@@ -169,11 +160,11 @@ class BankAccountsRepository implements BankAccountRepositoryInterface
             return false;
         } catch (PDOException $e) {
             $conn->rollBack();
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getMessage()];
         } catch (Exception $e) {
             $conn->rollBack();
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getMessage()];
         }
     }
@@ -191,7 +182,7 @@ class BankAccountsRepository implements BankAccountRepositoryInterface
 
             return null;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -212,7 +203,7 @@ class BankAccountsRepository implements BankAccountRepositoryInterface
             }
             return $ret;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -234,7 +225,7 @@ class BankAccountsRepository implements BankAccountRepositoryInterface
             }
             return $ret;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }

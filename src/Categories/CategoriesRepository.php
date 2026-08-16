@@ -4,21 +4,17 @@ namespace App\Categories;
 
 use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
-use App\Interfaces\RepositoryInterface;
 use App\Categories\Categories;
-use App\Logging\Log;
-use App\Logging\LogTypeEnum;
 use Exception;
 use PDOException;
+use Psr\Log\LoggerInterface;
 
 class CategoriesRepository
 {
 
-    private $db;
 
-    public function __construct(MySqlDatabaseImpl $db)
+    public function __construct(private MySqlDatabaseImpl $db, private LoggerInterface $logger)
     {
-        $this->db = $db;
     }
 
     public function save(array $data) : array | null |Model
@@ -53,9 +49,10 @@ class CategoriesRepository
                 }
             }
         } catch (PDOException $e) {
-            throw $e;
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         } catch (Exception $e) {
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         }
 
@@ -112,17 +109,15 @@ class CategoriesRepository
                 }
             }
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         }
-
-        return $account;
     }
 
-    public function delete($data) : bool | array
+    public function delete(array $data) : bool | array
     {
 
         $it = "SELECT count(*) as count FROM items where category=:id and user=:user";
@@ -151,9 +146,11 @@ class CategoriesRepository
             return false;
         } catch (PDOException $e) {
             $conn->rollBack();
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getMessage()];
         } catch (Exception $e) {
             $conn->rollBack();
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getMessage()];
         }
     }
@@ -171,6 +168,7 @@ class CategoriesRepository
 
             return null;
         } catch (PDOException $e) {
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -192,6 +190,7 @@ class CategoriesRepository
             }
             return $ret;
         } catch (PDOException $e) {
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -231,7 +230,7 @@ class CategoriesRepository
             }
             return $ret;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -252,6 +251,7 @@ class CategoriesRepository
             }
             return $ret;
         } catch (PDOException $e) {
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }

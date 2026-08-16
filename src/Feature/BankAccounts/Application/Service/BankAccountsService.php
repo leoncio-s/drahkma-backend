@@ -19,11 +19,9 @@ class BankAccountsService
     public function create(array $data) : Model | array | null
     {
 
-        // new Log($data, LogTypeEnum::DEBUG);
         if (isset($data['user'])) {
             $validation = BankAccounts::validate($data);
 
-            // new Log($validation, LogTypeEnum::DEBUG);
             if (isset($validation['errors'])) {
                 return $validation;
             }
@@ -45,7 +43,6 @@ class BankAccountsService
 
         if (isset($data['user'])) {
             $cat = BankAccounts::validate($data, true);
-            // new Log($cat, LogTypeEnum::DEBUG);
             if (isset($cat['errors'])) {
                 return $cat;
             } else {

@@ -4,11 +4,11 @@ namespace App\Cards;
 
 use App\Cards\Cards;
 use App\Cards\CardsService;
-use App\Logging\Log;
 use App\Utils\Http\Autenticated;
 use App\Utils\Http\HttpStatus;
 use App\Utils\Http\Request;
 use Exception;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -16,11 +16,11 @@ use Symfony\Component\Routing\Attribute\Route;
 class CardsController
 {
 
-    private CardsService $service;
-    public function __construct(CardsService $service)
-    {
-        $this->service = $service;
-    }
+    // private CardsService $service;
+    public function __construct(private CardsService $service, private ?LoggerInterface $logger = null){}
+    // {
+        // $this->service = $service;
+    // }
 
     #[Route("", name:"list", methods:["GET"])]
     public function list()
@@ -89,7 +89,7 @@ class CardsController
         }
         }catch (Exception $e)
         {
-            new Log($e);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return new JsonResponse(["erro"=>$e->getMessage()], 400);
         }
     }

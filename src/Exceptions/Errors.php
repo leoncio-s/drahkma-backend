@@ -29,6 +29,16 @@ class Errors{
         return $this->message;
     }
 
+    public function setCode(int $code): void
+    {
+        $this->code = $code;
+    }
+
+    public function getCode(): int
+    {
+        return $this->code;
+    }
+
     
     public function toUserReturn():array{
         return [
@@ -45,7 +55,7 @@ class Errors{
             "code" => $this->code,
             "filename" => $this->filename,
             "line" => $this->line,
-            "prev" => $this->previus != null? $this->previus->getTraceAsString() : []
+            "prev" => $this->previus != null? $this->previus->getTrace() : []
         ];
     }
 

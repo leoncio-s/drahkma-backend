@@ -4,23 +4,18 @@ namespace App\Users;
 
 use App\Database\Databases;
 use App\Exceptions\UserNotFoundException;
-use App\Logging\Log;
-use App\Logging\LogTypeEnum;
 use App\Users\User;
 use App\Utils\Http\HttpStatus;
 use DateTime;
 use Exception;
 use PDOException;
+use Psr\Log\LoggerInterface;
 
 class UserRepository
 {
 
-    private $db;
-
-    public function __construct(Databases $db)
-    {
-        $this->db = $db;
-    }
+    public function __construct(private Databases $db, private LoggerInterface $logger)
+    { }
 
     public function get(int $id): User | null
     {
@@ -61,15 +56,13 @@ class UserRepository
             // var_dump($user->getId());
             return $user;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             if ($e->errorInfo[1] == 1062) {
                 return ['error' => "Duplicate value for e-mail field"];
             } else {
                 return ['error' => $e->getCode()];
             }
         }
-
-        return null;
     }
 
     public function update(array $data): User | null
@@ -121,6 +114,7 @@ class UserRepository
             }
 
         }catch(PDOException $ex){
+            $this->logger->error($ex->getMessage(), $ex->getTrace());
             $conn->rollBack();
             throw $ex;
         }
@@ -171,12 +165,13 @@ class UserRepository
             }
 
         }catch(Exception $ex){
+            $this->logger->error($ex->getMessage(), $ex->getTrace());
             $conn->rollBack();
             throw $ex;
         }
     }
 
-    public function generateEmailVerification($email, $token, $exp_At)
+    public function generateEmailVerification(string $email, string $token, string $exp_At)
     {
         $db = $this->db->getDBConn();
         $db->beginTransaction();
@@ -188,11 +183,9 @@ class UserRepository
             return true;
         } catch (PDOException $e) {
             $db->rollBack();
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             throw $e;
         }
-
-        return false;
     }
 
     public function getEmailByVerifyToken(string $token)
@@ -222,8 +215,7 @@ class UserRepository
                 return false;
             }
         } catch (PDOException $e) {
-            // echo $e;
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return false;
         }
     }
@@ -261,6 +253,7 @@ class UserRepository
             }
         }catch(Exception $ex){
             $dbConn->rollBack();
+            $this->logger->error($ex->getMessage(), $ex->getTrace());
             throw $ex;
         }
     }
@@ -294,6 +287,7 @@ class UserRepository
             }
         }catch(Exception $ex){
             $dbConn->rollBack();
+            $this->logger->error($ex->getMessage(), $ex->getTrace());
             throw $ex;
         }
     }

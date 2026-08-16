@@ -7,7 +7,7 @@ use App\Logging\LogTypeEnum;
 use Exception;
 
 class Request{
-    public static function getAll() :  array | null{
+    public static function getAll() {
         if($_SERVER['CONTENT_TYPE'] != 'application/json; charset=utf-8' && $_SERVER['CONTENT_TYPE'] != 'application/json'){
             return Response::json(http_code_status:HttpStatus::HTTP_BAD_REQUEST);
         }

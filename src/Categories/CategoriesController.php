@@ -4,12 +4,11 @@ namespace App\Categories;
 
 use App\Categories\Categories;
 use App\Categories\CategoriesService;
-use App\Logging\Log;
-use App\Logging\LogTypeEnum;
 use App\Utils\Http\Autenticated;
 use App\Utils\Http\HttpStatus;
 use App\Utils\Http\Request;
 use Exception;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -17,11 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 class CategoriesController
 {
 
-    private CategoriesService $service;
-    public function __construct(CategoriesService $service)
-    {
-        $this->service = $service;
-    }
+    public function __construct(private CategoriesService $service, private LoggerInterface $logger)
+    {}
 
     #[Route("", name:"save", methods:['POST'])]
     public function save()
@@ -92,7 +88,7 @@ class CategoriesController
 
         }catch(Exception $e)
         {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             throw new Exception("Erro ao processar a solicitação", 500, $e);
         }
     }

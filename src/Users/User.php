@@ -3,7 +3,6 @@
 namespace App\Users;
 
 use App\Interfaces\Model;
-use App\Logging\Log;
 use DateTime;
 use Exception;
 use App\Utils\PasswordUtils;

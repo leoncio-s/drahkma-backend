@@ -6,30 +6,18 @@ use App\Cards\CardsRepository;
 use App\Categories\CategoriesRepository;
 use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
-use App\Interfaces\RepositoryInterface;
 use App\Items\Items;
-use App\Logging\Log;
-use App\Logging\LogTypeEnum;
 use App\TransfersBank\TransferBank;
 use App\TransfersBank\TransferBankRepository;
 use Exception;
 use PDOException;
+use Psr\Log\LoggerInterface;
 
 class ItemsRepository
 {
 
-    private $db;
-    private CategoriesRepository $catRepo;
-    private CardsRepository $cardRepo;
-    private TransferBankRepository $trfBRepo;
-
-    public function __construct(MySqlDatabaseImpl $db)
-    {
-        $this->db = $db;
-        $this->catRepo = new CategoriesRepository($db);
-        $this->cardRepo = new CardsRepository($db);
-        $this->trfBRepo = new TransferBankRepository($db);
-    }
+    public function __construct(private MySqlDatabaseImpl $db, private CategoriesRepository $catRepo, private CardsRepository $cardRepo, private TransferBankRepository $trfBRepo, private LoggerInterface $logger)
+    {}
 
     public function save(array $data): array | null |Model
     {
@@ -72,10 +60,10 @@ class ItemsRepository
             }
         } catch (PDOException $e) {
             // throw $e;
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         }
 
@@ -132,28 +120,26 @@ class ItemsRepository
                 $item = $this->getByIdAndUser($data['id'], $data['user']);
             } catch (PDOException $e) {
                 $dbConn->rollBack();
-                new Log($e, LogTypeEnum::ERROR);
+                $this->logger->error($e->getMessage(), $e->getTrace());
                 return ['errors' => $e->getCode()];
             } catch (Exception $e) {
                 $dbConn->rollBack();
-                new Log($e, LogTypeEnum::ERROR);
+                $this->logger->error($e->getMessage(), $e->getTrace());
                 return ['errors' => $e->getCode()];
             }
 
             return $item;
         } catch (PDOException $e) {
             // throw $e;
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getCode()];
         }
-
-        return $item;
     }
 
-    public function delete($data): bool | array
+    public function delete(array $data): bool | array
     {
         try {
             if (isset($data['id']) && isset($data['user'])) {
@@ -177,11 +163,11 @@ class ItemsRepository
                         }
                     } catch (PDOException $e) {
                         $dbCon->rollBack();
-                        new Log($e, LogTypeEnum::ERROR);
+                        $this->logger->error($e->getMessage(), $e->getTrace());
                         return ['errors' => $e->getCode()];
                     } catch (Exception $e) {
                         $dbCon->rollBack();
-                        new Log($e, LogTypeEnum::ERROR);
+                        $this->logger->error($e->getMessage(), $e->getTrace());
                         return ['errors' => $e->getCode()];
                     }
                 }
@@ -189,10 +175,10 @@ class ItemsRepository
 
             return ['errors' => "Invalid fields"];
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getCode()];
         }
     }
@@ -228,7 +214,7 @@ where i.id=?";
 
             return null;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -264,7 +250,7 @@ where i.id=? and i.user=?";
 
             return null;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ["errors" => $e->getCode()];
         }
     }
@@ -304,7 +290,7 @@ where i.user=? order by date desc;";
             }
             return $ret;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -349,10 +335,10 @@ order by date desc;";
 
             return $toRet;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return [];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return [];
         }
     }
@@ -397,10 +383,10 @@ order by date desc;";
 
             return $toRet;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return [];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return [];
         }
     }
@@ -452,10 +438,10 @@ order by date desc;";
 
             return (float) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -482,10 +468,10 @@ order by date desc;";
 
             return  (float) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -519,10 +505,10 @@ order by date desc;";
 
             return  (array) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -556,10 +542,10 @@ order by date desc;";
 
             return  (array) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -593,10 +579,10 @@ order by date desc;";
 
             return  (array) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -630,10 +616,10 @@ order by date desc;";
 
             return  (array) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -669,10 +655,10 @@ order by date desc;";
 
             return  (array) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -708,10 +694,10 @@ order by date desc;";
 
             return  (array) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -742,10 +728,10 @@ order by date desc;";
 
             return  (float) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -777,10 +763,10 @@ order by date desc;";
 
             return  (float) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -808,10 +794,10 @@ order by date desc;";
 
             return  (float) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -839,10 +825,10 @@ order by date desc;";
 
             return  (float) $data;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }

@@ -4,24 +4,17 @@ namespace App\TransfersBank;
 
 use App\Database\MySqlDatabaseImpl;
 use App\Feature\BankAccounts\Infrastructure\Persistence\BankAccountsRepository;
-use App\Logging\Log;
-use App\Logging\LogTypeEnum;
 use App\TransfersBank\TransferBank;
 use Exception;
 use PDOException;
+use Psr\Log\LoggerInterface;
 
 class TransferBankRepository
 {
 
-    private $db;
 
-    private BankAccountsRepository $bnkRepo;
-
-    public function __construct(MySqlDatabaseImpl $db)
-    {
-        $this->db = $db;
-        $this->bnkRepo = new BankAccountsRepository($db);
-    }
+    public function __construct(private MySqlDatabaseImpl $db, private BankAccountsRepository $bnkRepo, private LoggerInterface $logger)
+    {}
 
     public function save(array $data): array | null |TransferBank
     {
@@ -45,11 +38,10 @@ class TransferBankRepository
 
             if (is_numeric($prepare)) return $this->get((int)$prepare);
         } catch (PDOException $e) {
-            // throw $e;
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         }
 
@@ -88,17 +80,15 @@ class TransferBankRepository
                 throw $e;
             }
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getCode()];
         }
-
-        return $account;
     }
 
-    public function delete($id): array | bool
+    public function delete(int $id): array | bool
     {
         $dbCon = $this->db->getDBConn();
         $dbCon->beginTransaction();
@@ -114,10 +104,10 @@ class TransferBankRepository
                 return false;
             }
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getMessage()];
         }
     }
@@ -135,10 +125,10 @@ class TransferBankRepository
 
             return null;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             throw $e;
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             throw $e;
         }
     }
@@ -160,7 +150,7 @@ class TransferBankRepository
             }
             return $ret;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -178,7 +168,7 @@ class TransferBankRepository
             }
             return $ret;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getCode()];
         }
     }

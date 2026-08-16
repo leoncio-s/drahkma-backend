@@ -5,19 +5,15 @@ namespace App\Cards;
 use App\Database\MySqlDatabaseImpl;
 use App\Interfaces\Model;
 use App\Cards\Cards;
-use App\Logging\Log;
-use App\Logging\LogTypeEnum;
 use Exception;
 use PDOException;
+use Psr\Log\LoggerInterface;
 
 class CardsRepository
 {
 
-    private $db;
-
-    public function __construct(MySqlDatabaseImpl $db)
-    {
-        $this->db = $db;
+    public function __construct(private MySqlDatabaseImpl $db, private LoggerInterface $logger)
+    {        // $this->db = $db;
     }
 
     public function save(array $data) : array | null |Model
@@ -63,10 +59,10 @@ class CardsRepository
                 }
             }
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         } catch (Exception $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['error' => $e->getCode()];
         }
 
@@ -114,8 +110,6 @@ class CardsRepository
                     "id" => $data['id']
                 ];
 
-                new Log($data, LogTypeEnum::ERROR);
-
                 $dbConn = $this->db->getDBConn();
                 $dbConn->beginTransaction();
                 try {
@@ -139,18 +133,18 @@ class CardsRepository
             }
         } catch (PDOException $e) {
             // throw $e;
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getCode()];
         } catch (Exception $e) {
             // throw $e
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getCode()];
         }
 
         return $account;
     }
 
-    public function delete($data) : bool | array
+    public function delete(array $data) : bool | array
     {
 
         $it = "SELECT count(*) as count FROM items where card=:id and user=:user";
@@ -180,11 +174,11 @@ class CardsRepository
             return false;
         } catch (PDOException $e) {
             $conn->rollBack();
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getMessage()];
         } catch (Exception $e) {
             $conn->rollBack();
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return ['errors' => $e->getMessage()];
         }
     }
@@ -202,7 +196,7 @@ class CardsRepository
 
             return null;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -224,7 +218,7 @@ class CardsRepository
             }
             return $ret;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
@@ -243,7 +237,7 @@ class CardsRepository
 
             return null;
         } catch (PDOException $e) {
-            new Log($e, LogTypeEnum::ERROR);
+            $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
         }
     }
