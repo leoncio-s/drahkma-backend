@@ -192,25 +192,19 @@ class UserRepository
     {
         $conn = $this->db->getDBConn();
         try {
-            $ret = $conn->prepare("SELECT email, expires_at FROM email_verified where token=?");
+            $ret = $conn->prepare("SELECT email, expires_at FROM email_verified where token=? and expires_at > current_timestamp;");
             $ret->execute([$token]);
 
             $ret = $ret->fetchAll();
 
             if (count($ret) == 1) {
-                $exp = new DateTime($ret[0]['expires_at']);
-                $at = (new DateTime('now', $exp->getTimezone()))->getTimestamp();
 
                 $q = $conn->prepare("DELETE FROM email_verified WHERE token=?;");
                 $q->execute([$token]);
                 
-                if (($exp->getTimestamp() - $at) <= 0) {
-                    return false;
-                } else {
-                    $q = $conn->prepare("UPDATE users SET email_verified_at=CURRENT_TIMESTAMP, actived=1 WHERE email=?");
-                    $q->execute([$ret[0]['email']]);
-                    return true;
-                }
+                $q = $conn->prepare("UPDATE users SET email_verified_at=CURRENT_TIMESTAMP, actived=1 WHERE email=?");
+                $q->execute([$ret[0]['email']]);
+                return true;
             } else {
                 return false;
             }
