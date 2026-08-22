@@ -11,12 +11,14 @@ use App\Utils\Http\Request;
 use Exception;
 use InvalidArgumentException;
 use PDOException;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route("/v1/user", name:"user_")]
-class UsersController{
+class UsersController extends AbstractController{
 
 
     private UserServices $services;
@@ -64,13 +66,12 @@ class UsersController{
             return new JsonResponse($ret->toArray());
     }
 
-    #[Route('/email/verify/{$token}', name:"email_verify", methods:["GET"])]
+    #[Route('/email/verify/{token}', name:"email_verify", methods:["GET"])]
     public function emailVerified(string $token){
         if($this->services->verifyEmailToken($token)){
-            http_response_code(301);
-            header('location: /');
+            return $this->redirect("/?" . http_build_query(["success" => "true", "message"=>"Email validado. Prossiga com o login."]), status:Response::HTTP_FOUND);
         }else{
-            echo "Token inválido ou já expirou. Tente novamente!";
+           return $this->redirect("/?" . http_build_query(["success" => "false", "message"=>"Email não validado. Token inválido ou já expirou. Tente novamente!"]), status:Response::HTTP_FOUND);
         }
     }
 
