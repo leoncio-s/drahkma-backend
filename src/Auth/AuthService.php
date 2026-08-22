@@ -18,11 +18,8 @@ use Exception;
 class AuthService
  {
 
-    private UserRepository $repository;
-
-    public function __construct(UserRepository $repository)
+    public function __construct(private UserRepository $repository, private UserServices $user_services)
     {
-        $this->repository = $repository;
     }
 
     public function login(?string $email, ?string $password)
@@ -36,16 +33,19 @@ class AuthService
         if ($user == null) {
             sleep(2);
             throw new InvalidEmailOrPasswordException();
-        } else if ($user->getEmailVerifiedAt() == null) {
-            UserServices::generateEmailVerification($user);
-            throw new EmailInvalidatedException("Email não validado.", 400);
-        } elseif ($user->getEmailVerifiedAt() != null && !$user->getActived()) {
-            return ['error' => 'User not allowed', 'errorCode' => HttpStatus::HTTP_FORBIDDEN];
-        } elseif ($user instanceof User) {
+        }elseif ($user instanceof User) {
             if (PasswordUtils::compare($password, $user->getPassword())) {
                 if(password_needs_rehash($user->getPassword(), PASSWORD_BCRYPT))
                 {
                     $this->repository->updatePassword($user->getId(), $password);
+                }
+                if ($user->getEmailVerifiedAt() == null) 
+                {
+                    $this->user_services->generateEmailVerification($user);
+                    throw new EmailInvalidatedException("Email não validado.", 400);
+                } else if ($user->getEmailVerifiedAt() != null && !$user->getActived()) 
+                {
+                    return ['error' => 'User not allowed', 'errorCode' => HttpStatus::HTTP_FORBIDDEN];
                 }
                 $token = JWTTokenUtils::generate($user);
                 return ["token" => $token, "user" => $user->toArray()];
