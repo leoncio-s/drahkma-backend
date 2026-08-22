@@ -3,8 +3,6 @@
 namespace App\Users;
 
 use App\Exceptions\UserNotFoundException;
-use App\Interfaces\RepositoryInterface;
-use App\Interfaces\ServicesInterface;
 use App\Users\UserRepository;
 use App\Utils\Base64Utils;
 use App\Utils\GenerateTokensUtils;
@@ -15,30 +13,27 @@ use Exception;
 use App\Utils\Email\EmailVerification;
 use App\Utils\PasswordUtils;
 use InvalidArgumentException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Throwable;
 
-class UserServices
+class UsersServices
 {
 
-    private static UserRepository $repository;
-
-    public function __construct(UserRepository $repository)
-    {
-        self::$repository = $repository;
-    }
+    public function __construct(private UserRepository $repository, private UrlGeneratorInterface $urlGenerator)
+    { }
 
     public function create(array $data): User | array | null
     {
         $validate = User::validate($data);
-        $emailValidate = self::$repository->getByEmail($data['email']);
+        $emailValidate = $this->repository->getByEmail($data['email']);
 
         if ($emailValidate instanceof User) {
-            $validate['data'] = $data;
             $validate['errors']['email'] = 'Has exist account with this email.';
-            return $validate;
+            return $validate["errors"];
         } else if (isset($validate['errors'])) {
-            return $validate;
+            return $validate["errors"];
         }
-        $user = self::$repository->save($validate['data']);
+        $user = $this->repository->save($validate['data']);
         if ($user instanceof User) {
             return $user;
         }
@@ -47,24 +42,24 @@ class UserServices
 
     public function read(int $id) : User | array | null
     {
-        $data = self::$repository->get($id);
+        $data = $this->repository->get($id);
         return $data;
     }
 
     public function update(array $data) : ?User
     {
-        $data = self::$repository->update($data);
+        $data = $this->repository->update($data);
         return $data;
     }
 
-    public function delete($data) : bool | null
+    public function delete(array $data) : bool | null
     {
-        return self::$repository->delete($data['id']);
+        return $this->repository->delete($data['id']);
     }
 
     public function userByEmailToLogin(String $email): User | null
     {
-        $user = self::$repository->getByEmail($email);
+        $user = $this->repository->getByEmail($email);
         if ($user != null && $user['actived']) {
             return $user;
         }
@@ -72,12 +67,12 @@ class UserServices
     }
 
 
-    public function verifyEmailToken(string $token)
+    public function verifyEmailToken(string $token) : bool
     {
-        return self::$repository->getEmailByVerifyToken(Base64Utils::base64_url_decode($token));
+        return $this->repository->getEmailByVerifyToken(Base64Utils::base64url_decode($token));
     }
 
-    public static function generateEmailVerification(User $user)
+    public function generateEmailVerification(User $user) : Throwable | bool
     {
         $exp_At = new DateTime('now', new DateTimeZone('America/Sao_Paulo'));
         $exp_At->add(DateInterval::createFromDateString('4 hour'));
@@ -85,10 +80,13 @@ class UserServices
         try {
             $token = GenerateTokensUtils::emailGenerateToken($user->getEmail(), $user->getId(), $stringDate);
 
-            $ret = self::$repository->generateEmailVerification($user->getEmail(), $token, $stringDate);
+            $ret = $this->repository->generateEmailVerification($user->getEmail(), $token, $stringDate);
 
             if ($ret) {
-                $link = SERVER_HOST . API_ROUTE . '/user/email/verify/' . Base64Utils::base64_url_encode($token);
+                $tokenb64 = Base64Utils::base64url_encode($token);
+                $link = $this->urlGenerator->generate("user_email_verify", [
+                    "token"=> $tokenb64
+                ], UrlGeneratorInterface::ABSOLUTE_URL);
                 return EmailVerification::sendEmailVerificationNotification($user->getEmail(), $link, $stringDate, $user->getFullName());
             } else {
                 return false;
@@ -98,9 +96,9 @@ class UserServices
         }
     }
 
-    public function updatePassword(array $user, string $password, string $nPassword, string $cfNPassword)
+    public function updatePassword(array $user, string $password, string $nPassword, string $cfNPassword) : Throwable | bool
     {
-        $user = self::$repository->getByEmail($user["email"]);
+        $user = $this->repository->getByEmail($user["email"]);
         if($user == null)
         {
             throw new UserNotFoundException();
@@ -116,7 +114,7 @@ class UserServices
             throw new InvalidArgumentException("Nova senha não pode ser igual a atual", 422);
         }
 
-        $user = self::$repository->updatePassword($user->getId(), $nPassword);
+        $user = $this->repository->updatePassword($user->getId(), $nPassword);
         if($user instanceof User)
         {
             return true;
