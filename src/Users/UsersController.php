@@ -3,7 +3,7 @@
 namespace App\Users;
 
 use App\Users\User;
-use App\Users\UserServices;
+use App\Users\UsersServices;
 use App\Utils\Http\Autenticated;
 use App\Utils\Http\HttpStatus as hS;
 use App\Utils\Http\HttpStatus;
@@ -21,8 +21,8 @@ use Symfony\Component\Routing\Attribute\Route;
 class UsersController extends AbstractController{
 
 
-    private UserServices $services;
-    public function __construct(UserServices $userServices) {
+    private UsersServices $services;
+    public function __construct(UsersServices $userServices) {
         $this->services = $userServices;
     }
 

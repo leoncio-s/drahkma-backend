@@ -7,7 +7,7 @@ use App\Exceptions\InvalidEmailOrPasswordException;
 use App\Exceptions\UserNotFoundException;
 use App\Users\User;
 use App\Users\UserRepository;
-use App\Users\UserServices;
+use App\Users\UsersServices;
 use App\Utils\Email\ForgetPasswordEmail;
 use App\Utils\GenerateTokensUtils;
 use App\Utils\Http\HttpStatus;
@@ -18,7 +18,7 @@ use Exception;
 class AuthService
  {
 
-    public function __construct(private UserRepository $repository, private UserServices $user_services)
+    public function __construct(private UserRepository $repository, private UsersServices $user_services)
     {
     }
 
