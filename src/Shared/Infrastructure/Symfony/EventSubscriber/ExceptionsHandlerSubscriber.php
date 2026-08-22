@@ -1,7 +1,11 @@
 <?php 
 
-namespace App\Exceptions;
+namespace App\Shared\Infrastructure\Symfony\EventSubscriber;
 
+use App\Exceptions\EmailInvalidatedException;
+use App\Exceptions\InvalidEmailOrPasswordException;
+use App\Exceptions\UnauthenticatedException;
+use App\Shared\Domain\Entity\Errors;
 use App\Utils\Http\HttpStatus;
 use Exception;
 use PDOException;
@@ -9,6 +13,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class ExceptionsHandlerSubscriber implements EventSubscriberInterface
@@ -55,6 +60,11 @@ class ExceptionsHandlerSubscriber implements EventSubscriberInterface
         if($ex instanceof PDOException)
         {
             $erro->setMessage("Ocorreu um erro ao processar a solicitação no banco de dados, tente novamente mais tarde ou acione o administrador do sistema.");
+        }
+        
+        if($ex instanceof MethodNotAllowedHttpException)
+        {
+            $code = 405;
         }
 
         $erro->setCode($code == null ? HttpStatus::HTTP_INTERNAL_SERVER_ERROR->value : $code->value);

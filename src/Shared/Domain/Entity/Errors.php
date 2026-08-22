@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions;
+namespace App\Shared\Domain\Entity;
 
 use \DateTime;
 use DateTimeZone;
