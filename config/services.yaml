@@ -42,5 +42,6 @@ services:
     App\Database\Databases:
         alias: App\Database\MySqlDatabaseImpl
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Shared\Infrastructure\Symfony\EventSubscriber\CorsSubscriber:
+        arguments:
+            $allowOrigin: "%env(CORS_ALLOW_ORIGIN)%"
