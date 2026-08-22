@@ -7,7 +7,7 @@ vscode/
 *.log
 *.ini
 *.env
-*.env.dev
+*.env.*
 
 .httaccess
 */Database/sql/
