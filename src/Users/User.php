@@ -283,13 +283,7 @@ class User implements Model
             foreach($errors as $k => $v){
                 if(count($errors[$k]) == 0) unset($errors[$k]);
             }
-            return ['errors' => $errors, 'data'=>[
-                'fullname' => $fullname,
-                'email' => $email,
-                'password' => $password,
-                'conf_password' => isset($data['conf_password'])? $conf_password : '',
-                'phone_number' => $phone_number
-            ]];
+            return ['errors' => $errors];
         }else{
             $user = new User(fullname:$fullname, email:$email, password:$password, phone_number:$phone_number);
             return ['data'=>$user->toArraySave()];
