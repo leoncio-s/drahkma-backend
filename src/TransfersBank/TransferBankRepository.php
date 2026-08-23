@@ -3,7 +3,7 @@
 namespace App\TransfersBank;
 
 use App\Database\MySqlDatabaseImpl;
-use App\Feature\BankAccounts\Infrastructure\Persistence\BankAccountsRepository;
+use App\Features\BankAccounts\Infrastructure\Persistence\BankAccountsRepository;
 use App\TransfersBank\TransferBank;
 use Exception;
 use PDOException;
