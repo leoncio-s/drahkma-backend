@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Feature\BankAccounts\Infrastructure\Persistence;
+namespace App\Features\BankAccounts\Infrastructure\Persistence;
 
 use App\Database\Databases;
 use App\Interfaces\Model;
-use App\Feature\BankAccounts\Domain\Entity\BankAccounts;
-use App\Feature\BankAccounts\Domain\Repository\BankAccountRepositoryInterface;
+use App\Features\BankAccounts\Domain\Entity\BankAccounts;
+use App\Features\BankAccounts\Domain\Repository\BankAccountRepositoryInterface;
 use Exception;
 use PDOException;
 use Psr\Log\LoggerInterface;

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Feature\BankAccounts\Application\Service;
+namespace App\Features\BankAccounts\Application\Service;
 
-use App\Feature\BankAccounts\Domain\Repository\BankAccountRepositoryInterface;
-use App\Feature\BankAccounts\Infrastructure\Persistence\BankAccountsRepository;
+use App\Features\BankAccounts\Domain\Repository\BankAccountRepositoryInterface;
+use App\Features\BankAccounts\Infrastructure\Persistence\BankAccountsRepository;
 use App\Interfaces\Model;
-use App\Feature\BankAccounts\Domain\Entity\BankAccounts;
+use App\Features\BankAccounts\Domain\Entity\BankAccounts;
 
 class BankAccountsService
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Feature\BankAccounts\Domain\Entity;
+namespace App\Features\BankAccounts\Domain\Entity;
 
 use App\Interfaces\Model;
 use App\Validators\StringValidator;

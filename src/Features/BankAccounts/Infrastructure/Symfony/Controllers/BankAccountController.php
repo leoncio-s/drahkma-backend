@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Feature\BankAccounts\Infrastructure\Symfony\Controllers;
+namespace App\Features\BankAccounts\Infrastructure\Symfony\Controllers;
 
-use App\Feature\BankAccounts\Domain\Entity\BankAccounts;
+use App\Features\BankAccounts\Domain\Entity\BankAccounts;
 use App\Exceptions\UnauthenticatedException;
-use App\Feature\BankAccounts\Application\Service\BankAccountsService;
+use App\Features\BankAccounts\Application\Service\BankAccountsService;
 use App\Utils\Http\Autenticated;
 use App\Utils\Http\HttpStatus;
 use App\Utils\Http\Request;
@@ -20,7 +20,7 @@ class BankAccountController extends AbstractController{
         $this->service = $service;
     }
 
-    #[Route('', methods:['POST'], name:'create')]
+    #[Route('', methods:['POST'], name:'create', format:"json")]
     public function save(): Response
     {
         if(Autenticated::autenticated()){

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Feature\BankAccounts\Domain\Repository;
+namespace App\Features\BankAccounts\Domain\Repository;
 
 use App\Database\Databases;
 use Psr\Log\LoggerInterface;
