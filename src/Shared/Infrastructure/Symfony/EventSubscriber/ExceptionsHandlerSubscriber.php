@@ -6,12 +6,12 @@ use App\Exceptions\EmailInvalidatedException;
 use App\Exceptions\InvalidEmailOrPasswordException;
 use App\Exceptions\UnauthenticatedException;
 use App\Shared\Domain\Entity\Errors;
-use App\Utils\Http\HttpStatus;
 use Exception;
 use PDOException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -28,6 +28,14 @@ class ExceptionsHandlerSubscriber implements EventSubscriberInterface
         protected array $loggers = [],
     ) {
     }
+
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::EXCEPTION => ['onKernelException', 5],
+        ];
+    }
+
     public function onKernelException(ExceptionEvent $event) : void
     {
 
@@ -50,7 +58,7 @@ class ExceptionsHandlerSubscriber implements EventSubscriberInterface
         }
         try{
             if(is_int($ex->getCode()))
-                $code = HttpStatus::tryFrom($ex->getCode());
+                $code = $ex->getCode() < 600 ? $ex->getCode() : Response::HTTP_INTERNAL_SERVER_ERROR;
             else $code=null;
         }catch(Exception $e)
         {
@@ -67,20 +75,13 @@ class ExceptionsHandlerSubscriber implements EventSubscriberInterface
             $code = 405;
         }
 
-        $erro->setCode($code == null ? HttpStatus::HTTP_INTERNAL_SERVER_ERROR->value : $code->value);
+        $erro->setCode($code == null ? Response::HTTP_INTERNAL_SERVER_ERROR : $code);
 
         if(!($ex instanceof InvalidEmailOrPasswordException) && !($ex instanceof UnauthenticatedException))
         {
             $this->logger->error($erro->getMessage(), $erro->toLogReturn());
         }
         $event->setResponse(new JsonResponse($erro->toUserReturn(), $erro->getCode()));
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::EXCEPTION => 'onKernelException',
-        ];
     }
    
 }
