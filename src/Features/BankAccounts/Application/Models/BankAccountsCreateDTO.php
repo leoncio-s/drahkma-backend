@@ -10,21 +10,21 @@ class BankAccountsCreateDTO extends BankAccountsDTO
         #[Assert\Length(min:1, max:10)]
         #[Assert\Type(type:"digit")]
         #[Assert\NotNull()]
-        protected string $bankCode,
+        public string $bankCode,
         
         #[Assert\Length(min:3, max:100)]
         #[Assert\NotNull()]
-        protected string $bankName,
+        public string $bankName,
 
         #[Assert\Length(min:1, max:8)]
         #[Assert\Type(type:"digit")]
         #[Assert\NotNull()]
-        protected string $agency,
+        public string $agency,
 
         #[Assert\Length(min:1, max:8)]
         #[Assert\Type(type:"digit")]
         #[Assert\NotNull()]
-        protected string $accountNumber
+        public string $accountNumber
     ) {
     }
 
