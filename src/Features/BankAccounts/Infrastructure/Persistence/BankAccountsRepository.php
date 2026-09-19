@@ -2,184 +2,155 @@
 
 namespace App\Features\BankAccounts\Infrastructure\Persistence;
 
-use App\Database\Databases;
-use App\Interfaces\Model;
+use App\Features\BankAccounts\Application\Models\BankAccountsMapper;
 use App\Features\BankAccounts\Domain\Entity\BankAccounts;
 use App\Features\BankAccounts\Domain\Repository\BankAccountRepositoryInterface;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use PDOException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
-class BankAccountsRepository implements BankAccountRepositoryInterface
+class BankAccountsRepository extends ServiceEntityRepository implements BankAccountRepositoryInterface
 {
 
-    public function __construct(private Databases $db, private LoggerInterface $logger)
-    {}
+    public function __construct(ManagerRegistry $managerRegistry, private LoggerInterface $logger)
+    {
+        parent::__construct($managerRegistry, ORMBankAccountEntity::class);
+    }
 
-    public function save(array $data) : array | null |Model
+    public function save(BankAccounts $data) : ?BankAccounts
     {
         $account = null;
+        $entityManager = $this->getEntityManager();
 
+        $entityManager->beginTransaction();
         try {
-            $sqlSelect = "SELECT * FROM bank_accounts WHERE user=:user and agency=:agency and bankCode=:bankCode and accountNumber=:accountNumber limit 1;";
-            $select = $this->db->select(
-                $sqlSelect,
+
+            $select = $this->findOneBy(
                 [
-                    "user" => $data['user'],
-                    "agency" => $data["agency"],
-                    "bankCode" => $data["bankCode"],
-                    "accountNumber" => $data["accountNumber"]
+                    "userId" => $data->getUser(),
+                    "agency" => $data->getAgency(),
+                    "bankCode" => $data->getBankCode(),
+                    "accountNumber" => $data->getAccountNumber()
                 ]
             );
 
-            if (count($select) > 0) {
-                $account = new BankAccounts();
-                $account->toObject($select[0]);
+            if ($select !== null) {
+                $account = BankAccountsMapper::fromORMToEntity($select);
             } else {
-                $sql = "INSERT INTO bank_accounts(bankCode, user, bankName, agency, accountNumber) values(:bankCode, :user, :bankName, :agency, :accountNumber);";
-                $prepare = $this->db->insert($sql, [
-                    "user" => $data['user'],
-                    "agency" => $data["agency"],
-                    "bankCode" => $data["bankCode"],
-                    "accountNumber" => $data["accountNumber"],
-                    "bankName" => $data["bankName"]
-                ]);
+                $persitanceData = BankAccountsMapper::fromEntityToORM($data);
+                $entityManager->persist($persitanceData);
 
-                $dat = $this->db->select("SELECT * FROM bank_accounts WHERE id=?", [$prepare]);
+                $entityManager->flush();
+            
+                $account = BankAccountsMapper::fromORMToEntity($persitanceData);
 
-                if (count($dat) > 0) {
-                    $account = new BankAccounts();
-                    $account->toObject($dat[0]);
-                }
+                $entityManager->commit();
             }
         } catch (PDOException $e) {
             $this->logger->error($e->getMessage(), $e->getTrace());
-            return ['error' => $e->getCode()];
+            $entityManager->rollback();
+            throw $e;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage(), $e->getTrace());
-            return ['error' => $e->getCode()];
+            $entityManager->rollback();
+            throw $e;
         }
 
         return $account;
     }
 
-    public function update(array $data) : Model | array | null
+    public function update(BankAccounts $data) : ?BankAccounts
     {
+        $entityManager = $this->getEntityManager();
 
-
+        $entityManager->beginTransaction();
         try {
-            $sqlSelect = "SELECT * FROM bank_accounts WHERE user=:user and upper(bankName)=upper(:bankName) and agency=:agency and accountNumber=:accountNumber and bankCode=:bankCode and id<>:id limit 1;";
-            $select = $this->db->select(
-                $sqlSelect,
+            $select = $this->findOneBy(
                 [
-                    "user" => $data['user'],
-                    "bankName" => $data["bankName"],
-                    "id" => $data['id'],
-                    "bankCode" => $data['bankCode'],
-                    "agency" => $data['agency'],
-                    "accountNumber"  => $data['accountNumber'],
+                    "userId" => $data->getUser(),
+                    "bankName" => $data->getBankName(),
+                    "id" => $data->getId(),
+                    "bankCode" => $data->getBankCode(),
+                    "agency" => $data->getAgency(),
+                    "accountNumber"  => $data->getAccountNumber(),
                 ]
             );
 
-            if (count($select) > 0) {
-                return ['error' => "You already have a bank account with this data"];
-            } else {
-                $conn = $this->db->getDBConn();
-                $conn->beginTransaction();
-                try {
-                    $sql = "UPDATE bank_accounts SET bankCode=:bankCode, bankName=:bankName, agency=:agency, accountNumber=:accountNumber  WHERE user=:user and id=:id;";
-                    $prepare = $conn->prepare($sql);
+            if ($select != null) 
+            {
+                throw new UnprocessableEntityHttpException("You already have a bank account with this data", code: 422);
+            } else
+            {
+                $mapperORM = BankAccountsMapper::fromEntityToORM($data);
 
-                    $prepare->execute([
-                        "user" => $data['user'],
-                        "bankName" => $data["bankName"],
-                        "id" => $data['id'],
-                        "bankCode" => $data['bankCode'],
-                        "agency" => $data['agency'],
-                        "accountNumber"  => $data['accountNumber'],
-                    ]);
-
-                    $conn->commit();
-
-                    $dat = $this->db->select("SELECT * FROM bank_accounts WHERE id=?", [$data['id']]);
-
-                    if (count($dat) > 0) {
-                        $categories = new BankAccounts();
-                        $categories->toObject($dat[0]);
-                        return $categories;
-                    } else {
-                        return ['error' => "Não foi possível processar a solicitação"];
-                    }
-                } catch (PDOException $e) {
-                    $conn->rollBack();
-                    $this->logger->error($e->getMessage(), $e->getTrace());
-                    return ['error' => $e->getCode()];
-                } catch (Exception $e) {
-                    $conn->rollBack();
-                    $this->logger->error($e->getMessage(), $e->getTrace());
-                    return ['error' => $e->getCode()];
-                }
+                $entityManager->persist($mapperORM);
+                $entityManager->flush();
+                $account = BankAccountsMapper::fromORMToEntity($mapperORM);
             }
+            $entityManager->commit();
             return $account;
         } catch (PDOException $e) {
             $this->logger->error($e->getMessage(), $e->getTrace());
-            return ['error' => $e->getCode()];
+            $entityManager->rollback();
+            throw $e;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage(), $e->getTrace());
-            return ['error' => $e->getCode()];
+            $entityManager->rollback();
+            throw $e;
         }
     }
 
-    public function delete(array $data): bool | array
+    public function delete(BankAccounts $data): bool | array
     {
 
-        $it = "SELECT count(*) as count FROM transfer_bank where bank_account=:id and user=:user";
-        $select = $this->db->select($it, ['id' => $data['id'], "user" => $data['user']]);
+        $entityManager = $this->getEntityManager();
 
-        if ($select[0]['count'] > 0) {
-            return ['error' => "Há itens vinculados a esta conta bancária, não é possível excluí-la."];
+        $conn = $entityManager->getConnection();
+        $sql = "SELECT count(id) as count FROM transfer_bank where bank_account=:id and user=:user";
+
+        $it = $conn->executeQuery($sql, ['user' => $data->getUser(), "id" => $data->getId()]);
+        if ($it->fetchOne() > 0)
+        {
+            throw new BadRequestException("Há itens vinculados a esta conta bancária, não é possível excluí-la.", 400);
         }
 
-
-        $conn = $this->db->getDBConn();
-        $conn->beginTransaction();
+        $entityManager->beginTransaction();
         try {
-            $sql = "DELETE FROM bank_accounts WHERE id=:id and user=:user";
-
-            $prep = $conn->prepare($sql);
-
-            $prep->execute([
-                "id" => $data['id'],
-                "user" => $data['user']
+            $prep = $this->findOneBy([
+                "id" => $data->getId(),
+                "userId" => $data->getUser()
             ]);
 
-            if ($prep->rowCount() > 0) {
-                $conn->commit();
+            if ($prep !== null) {
+                $entityManager->remove($prep);
+                $entityManager->flush();
+                $entityManager->commit();
                 return true;
             }
             return false;
         } catch (PDOException $e) {
-            $conn->rollBack();
+            $entityManager->rollBack();
             $this->logger->error($e->getMessage(), $e->getTrace());
-            return ['error' => $e->getMessage()];
+            throw $e;
         } catch (Exception $e) {
-            $conn->rollBack();
+            $entityManager->rollBack();
             $this->logger->error($e->getMessage(), $e->getTrace());
-            return ['error' => $e->getMessage()];
+            throw $e;
         }
     }
 
-    public function get(int $id) : ?Model
+    public function get(int $id) : ?BankAccounts
     {
         try {
-            $sql = "Select * from bank_accounts where id=?;";
-            $data = $this->db->select($sql, [$id]);
+            $data = $this->find($id);
             if (count($data) > 0) {
-                $account = new BankAccounts();
-                $account->toObject($data[0]);
+                $account = BankAccountsMapper::fromORMToEntity($data);
                 return $account;
             }
-
             return null;
         } catch (PDOException $e) {
             $this->logger->error($e->getMessage(), $e->getTrace());
@@ -187,43 +158,34 @@ class BankAccountsRepository implements BankAccountRepositoryInterface
         }
     }
 
-    public function getByUser(int $userId):?array
+    public function getByUser(int $userId):array
     {
         try {
-            $ret = [];
-            $sql = "select * from bank_accounts where user=? order by bankName;";
-            $data = $this->db->select($sql, [$userId]);
+            $bankAccounts = [];
+            $data = $this->findBy(['userId'=>$userId]);
 
             if (count($data) > 0) {
                 foreach ($data as $ac) {
-                    $account = new BankAccounts();
-                    $account->toObject($ac);
-                    array_push($ret, $account->toArray());
+                    $account = BankAccountsMapper::fromORMToEntity($ac);
+                    array_push($bankAccounts, $account);
                 }
             }
-            return $ret;
+            return $bankAccounts;
         } catch (PDOException $e) {
             $this->logger->error($e->getMessage(), $e->getTrace());
-            return null;
+            throw $e;
         }
     }
 
-    public function getByIdAndUser(int $id, int $userId):?array
+    public function getByIdAndUser(int $id, int $userId):?BankAccounts
     {
         try {
-            $ret = [];
-            $sql = "select * from bank_accounts where user=? and id=? order by bankName;";
-            $data = $this->db->select($sql, [$userId, $id]);
+            $data = $this->findOneBy(["userId" => $userId, "id" => $id]);
 
-            if (count($data) > 0) {
-                foreach ($data as $ac) {
-                    $account = new BankAccounts();
-                    $account->toObject($ac);
-                    array_push($ret, $account->toArray());
-                    // unset($account);
-                }
+            if ($data != null) {
+                return BankAccountsMapper::fromORMToEntity($data);
             }
-            return $ret;
+            return null;
         } catch (PDOException $e) {
             $this->logger->error($e->getMessage(), $e->getTrace());
             return null;
