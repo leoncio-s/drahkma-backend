@@ -40,7 +40,6 @@ class MySqlDatabaseImpl extends Databases{
         
         try{
             $db = new PDO($connectionString, $username, $password, [
-                // PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4",
                 PDO::ATTR_ERRMODE,
                 PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_TIMEOUT=>10
