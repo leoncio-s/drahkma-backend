@@ -4,12 +4,15 @@ namespace App\Features\BankAccounts\Infrastructure\Symfony\Controllers;
 
 use App\Features\BankAccounts\Domain\Entity\BankAccounts;
 use App\Exceptions\UnauthenticatedException;
+use App\Features\BankAccounts\Application\Models\BankAccountsCreateDTO;
+use App\Features\BankAccounts\Application\Models\BankAccountsUpdateDTO;
 use App\Features\BankAccounts\Application\Service\BankAccountsService;
 use App\Utils\Http\Autenticated;
 use App\Utils\Http\HttpStatus;
 use App\Utils\Http\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/v1/banks', name:'bank_accounts_')]
@@ -21,14 +24,16 @@ class BankAccountController extends AbstractController{
     }
 
     #[Route('', methods:['POST'], name:'create', format:"json")]
-    public function save(): Response
+    public function save(
+        #[MapRequestPayload] BankAccountsCreateDTO $bankAccountDTO
+        ): Response
     {
         if(Autenticated::autenticated()){
             $data = Request::getAll();
             $data['user'] = Autenticated::getUserAuth()['id'];
-            $ret = $this->service->create($data);
+            $ret = $this->service->create($bankAccountDTO);
             if($ret instanceof BankAccounts){
-                return $this->json($ret->toArray(), HttpStatus::HTTP_CREATED->value);
+                return $this->json($ret, HttpStatus::HTTP_CREATED->value);
             }else{
                 return $this->json($ret, HttpStatus::HTTP_BAD_REQUEST->value);
             }
@@ -52,16 +57,16 @@ class BankAccountController extends AbstractController{
     }
 
     #[Route('', methods:['PUT'], name:'update')]
-    public function update() : Response
+    public function update(
+        #[MapRequestPayload] BankAccountsUpdateDTO $bankAccountsDTO
+    ) : Response
     {
         if(Autenticated::autenticated()){
-            $data = Request::getAll();
-            if(isset($data['id'])){
-                $data['user'] = Autenticated::getUserAuth()['id'];
-
-                $ret = $this->service->update($data);
+            if($bankAccountsDTO->getId() !== null){
+                $bankAccountsDTO->setUserId(Autenticated::getUserAuth()['id']);
+                $ret = $this->service->update($bankAccountsDTO);
                 if($ret instanceof BankAccounts){
-                    return $this->json($ret->toArray());
+                    return $this->json($ret);
                 }
                 return $this->json($ret, HttpStatus::HTTP_BAD_REQUEST->value);
             }else{
