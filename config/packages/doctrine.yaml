@@ -10,7 +10,7 @@ doctrine:
         host:     '%env(DB_HOST)%'
         port:     '%env(DB_PORT)%'
         dbname:   '%env(DB_DATABASE)%'
-        driver:   '%env(DB_DRIVER)%'
+        driver:   '%env(DB_DRIVER_DOCTRINE)%'
 
         profiling_collect_backtrace: '%kernel.debug%'
     orm:
