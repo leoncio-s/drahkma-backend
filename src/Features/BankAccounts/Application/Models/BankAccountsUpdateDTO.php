@@ -4,19 +4,19 @@ namespace App\Features\BankAccounts\Application\Models;
 
 use \Symfony\Component\Validator\Constraints as Assert;
 
-class BankAccountsUpdateDTO extends BankAccountsDTO
+final readonly class BankAccountsUpdateDTO extends BankAccountsDTO
 {
     public function __construct(
                 
         #[Assert\Type(type:"digits", groups:["update"])]
         #[Assert\Positive(groups:["update"])]
         #[Assert\NotNull(groups:["update"])]
-        public readonly int $id,
+        public ?int $id,
 
         #[Assert\Type(type:"digits", groups:["update"])]
         #[Assert\Positive(groups:["update"])]
         #[Assert\NotNull(groups:["update"])]
-        public readonly int $user,
+        public ?int $user,
 
         #[Assert\Length(min:1, max:10)]
         #[Assert\Type(type:"digit")]
@@ -39,4 +39,8 @@ class BankAccountsUpdateDTO extends BankAccountsDTO
     ) {
     }
 
+    public function setUserId(int $userId) : void
+    {
+        $this->user = $userId;
+    }
 }

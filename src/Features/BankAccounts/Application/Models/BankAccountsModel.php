@@ -24,23 +24,23 @@ class BankAccountsModel extends BankAccounts
     }
 
 
-    public function getBankCode() : ?string{
+    public function getBankCode() : string{
         return $this->bankCode;
     }
 
     public function getUserId() : ?int{
-        return $this->user;
+        return $this->userId;
     }
 
-    public function getBankName() : ?string{
+    public function getBankName() : string{
         return $this->bankName;
     }
 
-    public function getAgency() : ?string{
+    public function getAgency() : string{
         return $this->agency;
     }
 
-    public function getAccountNumber() : ?string{
+    public function getAccountNumber() : string{
         return $this->accountNumber;
     }
 
@@ -58,7 +58,7 @@ class BankAccountsModel extends BankAccounts
     }
 
     public function setUser(?int $userId) : void{
-        $this->user = ($userId != null) ? $userId : null;
+        $this->userId = ($userId != null) ? $userId : null;
     }
 
     public function setBankName(?string $bankName) : void{
