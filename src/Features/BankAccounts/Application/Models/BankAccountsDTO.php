@@ -2,15 +2,15 @@
 
 namespace App\Features\BankAccounts\Application\Models;
 
-readonly abstract class BankAccountsDTO
+abstract class BankAccountsDTO
 {
     protected string $bankCode;
     protected string $bankName;
     protected string $agency;
     protected string $accountNumber;
-    protected float $initialBalance;
-    protected ?int $user;
-    protected ?int $id;
+    protected float $initialBalance = 0.00;
+    protected ?int $user = null;
+    protected ?int $id = null;
 
     public function getId(): ?int 
     {
@@ -45,5 +45,10 @@ readonly abstract class BankAccountsDTO
     public function getInitialBalance(): float 
     {
         return $this->initialBalance;
+    }
+
+    public function setUser(int $idUser) :void
+    {
+        $this->user = $idUser;
     }
 }
