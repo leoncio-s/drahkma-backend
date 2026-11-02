@@ -85,11 +85,17 @@ class BankAccountsRepository extends ServiceEntityRepository implements BankAcco
                 throw new UnprocessableEntityHttpException("You already have a bank account with this data", code: 422);
             } else
             {
-                $mapperORM = BankAccountsMapper::fromEntityToORM($data);
 
-                $entityManager->persist($mapperORM);
+                $bankAccount = $entityManager->find(ORMBankAccountEntity::class, $data->getId());
+
+                $bankAccount->setAccountNumber($data->getAccountNumber());
+                $bankAccount->setAgency($data->getAgency());
+                $bankAccount->setBankCode($data->getBankCode());
+                $bankAccount->setBankName($data->getBankName());
+                $bankAccount->setInitialBalance($data->getInitialBalance());
+
                 $entityManager->flush();
-                $account = BankAccountsMapper::fromORMToEntity($mapperORM);
+                $account = BankAccountsMapper::fromORMToEntity($bankAccount);
             }
             $entityManager->commit();
             return $account;
