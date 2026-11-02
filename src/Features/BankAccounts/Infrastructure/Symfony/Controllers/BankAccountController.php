@@ -29,8 +29,7 @@ class BankAccountController extends AbstractController{
         ): Response
     {
         if(Autenticated::autenticated()){
-            $data = Request::getAll();
-            $data['user'] = Autenticated::getUserAuth()['id'];
+            $bankAccountDTO->setUser(Autenticated::getUserAuth()['id']);
             $ret = $this->service->create($bankAccountDTO);
             if($ret instanceof BankAccounts){
                 return $this->json($ret, HttpStatus::HTTP_CREATED->value);
