@@ -2,9 +2,7 @@
 
 namespace App\Features\BankAccounts\Domain\Repository;
 
-use App\Database\Databases;
 use App\Features\BankAccounts\Domain\Entity\BankAccounts;
-use Psr\Log\LoggerInterface;
 
 interface BankAccountRepositoryInterface{
     public function get(int $id): ?BankAccounts;
