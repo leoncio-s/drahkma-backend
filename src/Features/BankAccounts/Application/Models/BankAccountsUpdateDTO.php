@@ -4,38 +4,42 @@ namespace App\Features\BankAccounts\Application\Models;
 
 use \Symfony\Component\Validator\Constraints as Assert;
 
-final readonly class BankAccountsUpdateDTO extends BankAccountsDTO
+final class BankAccountsUpdateDTO extends BankAccountsCreateDTO
 {
     public function __construct(
                 
         #[Assert\Type(type:"digits", groups:["update"])]
         #[Assert\Positive(groups:["update"])]
         #[Assert\NotNull(groups:["update"])]
-        public ?int $id,
+        protected ?int $id,
 
         #[Assert\Type(type:"digits", groups:["update"])]
         #[Assert\Positive(groups:["update"])]
         #[Assert\NotNull(groups:["update"])]
-        public ?int $user,
+        protected ?int $user,
 
         #[Assert\Length(min:1, max:10)]
         #[Assert\Type(type:"digit")]
         #[Assert\NotNull()]
-        public string $bankCode,
+        protected string $bankCode,
         
         #[Assert\Length(min:3, max:100)]
         #[Assert\NotNull()]
-        public string $bankName,
+        protected string $bankName,
 
         #[Assert\Length(min:1, max:8)]
         #[Assert\Type(type:"digit")]
         #[Assert\NotNull()]
-        public string $agency,
+        protected string $agency,
 
-        #[Assert\Length(min:1, max:8)]
+        #[Assert\Length(min:1, max:10)]
         #[Assert\Type(type:"digit")]
         #[Assert\NotNull()]
-        public string $accountNumber
+        protected string $accountNumber,
+
+        #[Assert\Type(type:"float")]
+        #[Assert\NotNull()]
+        protected float $initialBalance = 0.00,
     ) {
     }
 
