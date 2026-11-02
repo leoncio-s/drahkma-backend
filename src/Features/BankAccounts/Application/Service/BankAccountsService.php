@@ -5,18 +5,14 @@ namespace App\Features\BankAccounts\Application\Service;
 use App\Features\BankAccounts\Application\Models\BankAccountsDTO;
 use App\Features\BankAccounts\Application\Models\BankAccountsMapper;
 use App\Features\BankAccounts\Domain\Repository\BankAccountRepositoryInterface;
-use App\Features\BankAccounts\Infrastructure\Persistence\BankAccountsRepository;
 use App\Features\BankAccounts\Domain\Entity\BankAccounts;
-use InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class BankAccountsService
 {
 
-    private BankAccountsRepository $repository;
-    public function __construct(BankAccountRepositoryInterface $repository)
+    public function __construct(private BankAccountRepositoryInterface $repository)
     {
-        $this->repository = $repository;
     }
 
     public function create(BankAccountsDTO $data) : ?BankAccounts
